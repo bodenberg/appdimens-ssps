@@ -8,6 +8,8 @@ plugins {
     // alias(libs.plugins.dokka.jetbrains)
 }
 
+val isJitPack = System.getenv("JITPACK") == "true"
+
 mavenPublishing {
     coordinates("io.github.bodenberg", "appdimens-ssps", "3.0.0")
 
@@ -19,20 +21,17 @@ mavenPublishing {
     )
 
     pom {
-        name.set("AppDimens SSP, HSP, WSP: Scalable Width and Height Fonts")
-        description.set(
-            "An extension of AppDimens that implements the SSP standard for widths and heights. It automatically generates pre-calculated @dimen resources, ensuring that layout dimensions (Dp) scale consistently across different screen sizes (fonts). Perfect for direct use in traditional XML layouts and Composables. " +
-                    "android, kotlin, java, jetpack-compose, xml, sp, ssp, dimensions, responsive, layout, design-system, adaptive, view-system"
-        )
+        name.set("AppDimens SSP, HSP, WSP")
+        description.set("Scalable width and height fonts for Android layouts")
         url.set("https://github.com/bodenberg/appdimens-ssps")
-        inceptionYear.set("2025")
+
         licenses {
             license {
-                name.set("The Apache License, Version 2.0")
-                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                name.set("Apache License 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
             }
         }
+
         developers {
             developer {
                 id.set("bodenberg")
@@ -40,43 +39,23 @@ mavenPublishing {
                 email.set("jean.bodenberg2@outlook.com")
             }
         }
+
         scm {
             connection.set("scm:git:github.com/bodenberg/appdimens-ssps.git")
             developerConnection.set("scm:git:ssh://github.com/bodenberg/appdimens-ssps.git")
             url.set("https://github.com/bodenberg/appdimens-ssps")
         }
     }
-    val isJitPack = System.getenv("JITPACK") != null || System.getenv("CI") == "true"
-    if (!isJitPack && (project.findProperty("signing.keyId") != null || project.findProperty("signing.secretKey") != null)) {
-        signAllPublications()
-        publishToMavenCentral()
-    }
-}
 
-publishing {
-    repositories {
-        maven {
-            name = "SonaType"
-            url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
-            credentials {
-                username = project.findProperty("mavenCentralUsername") as String?
-                password = project.findProperty("mavenCentralPassword") as String?
-            }
-        }
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bodenberg/appdimens-ssps")
-            credentials {
-                username = project.findProperty("gpr.user") as String?
-                password = project.findProperty("gpr.key") as String?
-            }
-        }
+    if (!isJitPack) {
+        publishToMavenCentral()
+        signAllPublications()
     }
 }
 
 /* dokka {
     dokkaPublications.html {
-        moduleName.set("AppDimens SSP, HSP, WSP: Scalable Width and Height Fonts")
+        moduleName.set("AppDimens SDP, HDP, WDP: Scalable Width and Height Dimensions")
         outputDirectory.set(layout.projectDirectory.dir("${rootDir}\\DOCUMENTATION"))
         suppressInheritedMembers.set(true)
         dokkaSourceSets.register("main") {
