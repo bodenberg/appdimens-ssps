@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F8F9FA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AppDimens Text Examples"
+            android:textSize="@dimen/_22ssp"
+            android:textStyle="bold"
+            android:textColor="#212529"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- SSP EXAMPLES -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp"
+            android:elevation="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SSP (Scalable Size Pixel)"
+                android:textSize="@dimen/_16ssp"
+                android:textStyle="bold"
+                android:textColor="#1976D2"
+                android:layout_marginBottom="6dp"/>
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scales seamlessly across screen sizes. Ideal for text as it respects user font settings."
+                android:textSize="@dimen/_12ssp"
+                android:textColor="#6C757D"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample Text @dimen/_14ssp"
+                    android:textColor="#42A5F5"
+                    android:textSize="@dimen/_14ssp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample Text @dimen/_20ssp"
+                    android:textColor="#1E88E5"
+                    android:textSize="@dimen/_20ssp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- WSP EXAMPLES -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp"
+            android:elevation="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WSP (Width Scalable Pixel)"
+                android:textSize="@dimen/_16wsp"
+                android:textStyle="bold"
+                android:textColor="#388E3C"
+                android:layout_marginBottom="6dp"/>
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scales text horizontally based specifically on display width."
+                android:textSize="@dimen/_12wsp"
+                android:textColor="#6C757D"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample Text @dimen/_14wsp"
+                    android:textColor="#66BB6A"
+                    android:textSize="@dimen/_14wsp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample Text @dimen/_20wsp"
+                    android:textColor="#43A047"
+                    android:textSize="@dimen/_20wsp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- HSP EXAMPLES -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp"
+            android:elevation="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HSP (Height Scalable Pixel)"
+                android:textSize="@dimen/_16hsp"
+                android:textStyle="bold"
+                android:textColor="#D32F2F"
+                android:layout_marginBottom="6dp"/>
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scales text vertically based specifically on display height."
+                android:textSize="@dimen/_12hsp"
+                android:textColor="#6C757D"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample Text @dimen/_14hsp"
+                    android:textColor="#EF5350"
+                    android:textSize="@dimen/_14hsp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample Text @dimen/_20hsp"
+                    android:textColor="#E53935"
+                    android:textSize="@dimen/_20hsp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
