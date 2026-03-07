@@ -2,51 +2,51 @@
 
 ![AppDimens Banner](IMAGES/banner_top.png)
 
-Bem-vindo à documentação oficial da biblioteca **AppDimens SSPS**.
+Welcome to the official documentation for the **AppDimens SSPS** library.
 
-## 📖 O que é a biblioteca?
+## 📖 What is this library?
 
-A **AppDimens SSP, HSP, WSP** é um sistema moderno de gerenciamento de dimensões exclusivo para tipografia e fontes (`Sp`) no Android. Ela expande o padrão clássico do SSP (Scaled Size Pixels) introduzindo também o dimensionamento por Altura (HSP) e Largura (WSP). A biblioteca automatiza o processo de ajuste dos tamanhos de texto (`TextUnit`), assegurando que a tipografia permaneça perfeitamente escalada e legível em qualquer formato de dispositivo de maneira matematicamente precisa.
+**AppDimens SSP, HSP, WSP** is a modern dimension management system exclusively for typography and fonts (`Sp`) on Android. It expands the classic SSP (Scaled Size Pixels) standard by introducing scaling by Height (HSP) and Width (WSP). The library automates the process of adjusting text sizes (`TextUnit`), ensuring that typography remains perfectly scaled and legible on any device format in a mathematically precise way.
 
-## ⚙️ O que ela faz?
+## ⚙️ What does it do?
 
-Ela fornece milhares de recursos `@dimen` pré-calculados (de `1` a `600`) prontos para usar, poupando ao desenvolvedor o trabalho de calcular tamanhos de fonte para cada variante de tela de Android.
+It provides thousands of pre-calculated `@dimen` resources (from `1` to `600`) ready to use, saving the developer the trouble of calculating font sizes for each Android screen variant.
 
-* **SSP (Smallest Width SP):** Escala a fonte com base na menor largura (Smallest Width) disponível do dispositivo. Perfeito para manter a proporção do texto na maioria dos cenários (ex: `@dimen/_16ssp` ou `16.ssp`).
-* **WSP (Width SP):** Escala o texto fundamentado especificamente na largura horizontal exata do dispositivo na orientação atual (ex: `@dimen/_16wsp` ou `16.wsp`).
-* **HSP (Height SP):** Escala o texto fundamentado especificamente na altura vertical exata do dispositivo (ex: `@dimen/_16hsp` ou `16.hsp`).
-* **SEM, WEM, HEM (Ignorar Escala da Fonte):** Variantes `.sem`, `.wem`, `.hem` funcionam da mesma forma que os recursos padrões SSP/WSP/HSP, mas **não acompanham as configurações de acessibilidade de escala de fonte do sistema**. São úteis para textos que não devem quebrar o design de componentes estritos independente da acessibilidade do usuário.
-* **Condicionais Dinâmicas (Compose):** Facilita a adaptação da fonte baseada no tipo de dispositivo (Carro, TV, Relógio) através da instrução `.scaledSp()`.
+* **SSP (Smallest Width SP):** Scales the font based on the device's smallest width available. Perfect for maintaining text proportions in most scenarios (e.g., `@dimen/_16ssp` or `16.ssp`).
+* **WSP (Width SP):** Scales text specifically based on the device's exact horizontal width in the current orientation (e.g., `@dimen/_16wsp` or `16.wsp`).
+* **HSP (Height SP):** Scales text specifically based on the device's exact vertical height (e.g., `@dimen/_16hsp` or `16.hsp`).
+* **SEM, WEM, HEM (Ignore Font Scale):** The `.sem`, `.wem`, `.hem` variants work the same way as the standard SSP/WSP/HSP resources but **do not follow the system's accessibility font scale settings**. They are useful for texts that shouldn't break strict component designs regardless of user accessibility preferences.
+* **Dynamic Conditionals (Compose):** Facilitates adapting the font based on the device type (Car, TV, Watch) through the `.scaledSp()` instruction.
 
 <br/>
 <p align="center">
-  <img src="IMAGES/screenshot.png" alt="Exemplo do layout" width="25%" />
+  <img src="IMAGES/screenshot.png" alt="Layout example" width="25%" />
 </p>
 <br/>
 
-## 🚀 Vantagens
+## 🚀 Advantages
 
-1. **Desenvolvimento Acelerado:** Elimina a necessidade de criar arquivos `dimens.xml` manuais massivos para várias categorias de telas (como `values-sw320dp`, `values-sw600dp`). Tudo já vem unificado.
-2. **Integração Híbrida Direta:** Funciona incrivelmente bem tanto no tradicional **XML** (`View System`) por meio de dimensões predefinidas, quanto na era moderna do **Jetpack Compose**.
-3. **Escalonamento Flexível:** Permite customizar a tipografia controlando se as escalas de acessibilidade do usuário do Android devem ou não afetar certos textos, por meio de `.ssp` (que respeita) vs `.sem` (que ignora a escala do usuário).
-4. **Precisão para TV, Wear OS e Auto:** Trata regras avançadas de fontes sem complexidade usando `UiModeType` combinados a qualificadores.
+1. **Accelerated Development:** Eliminates the need to create massive manual `dimens.xml` files for various screen categories (like `values-sw320dp`, `values-sw600dp`). Everything comes unified.
+2. **Direct Hybrid Integration:** Works incredibly well both in traditional **XML** (`View System`) through predefined dimensions, and in the modern era of **Jetpack Compose**.
+3. **Flexible Scaling:** Allows customizing typography by controlling whether Android's user accessibility scales should affect certain texts or not, through `.ssp` (which respects it) vs `.sem` (which ignores user scaling).
+4. **Precision for TV, Wear OS, and Auto:** Handles advanced font rules without complexity using `UiModeType` combined with qualifiers.
 
 ## ⚡ Performance
 
-A implementação garante um impacto zero ou virtualmente nulo na performance:
-* **No XML:** Todas as tags como `@dimen/_16ssp` são processadas estaticamente no build time e resolvidas de forma nativa e paralela aos recursos do Android Framework.
-* **No Compose:** O acesso a `.ssp`, `.hsp` e `.wsp` usa funções otimizadas que extraem as dimensões via context caching nativo (`LocalConfiguration`, `LocalDensity` e IDs injetados). Evitando o processamento desnecessário, ela respeita as etapas convencionais da UI sem forçar recomposições inúteis.
+The implementation ensures zero or virtually zero impact on performance:
+* **In XML:** All tags like `@dimen/_16ssp` are processed statically at build time and resolved natively and parallel to the Android Framework resources.
+* **In Compose:** Access to `.ssp`, `.hsp`, and `.wsp` uses optimized functions that extract dimensions via native context caching (`LocalConfiguration`, `LocalDensity`, and injected IDs). Avoiding unnecessary processing, it respects conventional UI steps without forcing useless recompositions.
 
-## 🛠️ Suporte e Instalação
+## 🛠️ Support and Installation
 
-A biblioteca tem amplo suporte no ecossistema Android e é constantemente acompanhada para os paradigmas mais recém-lançados.
+The library has broad support in the Android ecosystem and is constantly updated for the most recently launched paradigms.
 
 * **Min SDK:** 24
 * **Compile SDK:** 36
-* **Linguagens:** Kotlin e Java.
-* **Paradigma:** XML e Jetpack Compose.
+* **Languages:** Kotlin and Java.
+* **Paradigm:** XML and Jetpack Compose.
 
-Para instalar, basta adicionar no seu `build.gradle` (dependência):
+To install, simply add it to your `build.gradle` (dependency):
 
 ```kotlin
 dependencies {
@@ -54,28 +54,28 @@ dependencies {
 }
 ```
 
-### Exemplo Rápido no Compose:
+### Quick Example in Compose:
 ```kotlin
 Text(
-    text = "Dimensionamento Responsivo",
-    fontSize = 24.ssp, // Escala a fonte com base no Smallest Width e respeita a escala de fonte do sistema
+    text = "Responsive Sizing",
+    fontSize = 24.ssp, // Scales font based on Smallest Width and respects system font scale
     lineHeight = 28.ssp
 )
 
 Text(
-    text = "Tamanho de Texto Restrito",
-    fontSize = 16.sem // Escala baseada no Smallest Width, mas NÃO é afetado pela preferência de acessibilidade de visão
+    text = "Restricted Text Size",
+    fontSize = 16.sem // Scales based on Smallest Width, but is NOT affected by vision accessibility preference
 )
 ```
 
-### Exemplo Condicional Avançado:
+### Advanced Conditional Example:
 ```kotlin
 val dynamicFontSize = 16.sp.scaledSp()
     .screen(UiModeType.TELEVISION, customValue = 32.ssp)
-    .ssp // Resultado: 32.ssp na TV, 16.ssp nos demais aparelhos móveis
+    .ssp // Result: 32.ssp on TV, 16.ssp on other mobile devices
 ```
 
-![Demonstração extra](IMAGES/image.png)
+![Extra demonstration](IMAGES/image.png)
 
 ---
-*Criado com as melhores práticas de layout responsivo e acessível para o ecossistema Android.*
+*Created with the best practices for responsive and accessible layouts for the Android ecosystem.*
