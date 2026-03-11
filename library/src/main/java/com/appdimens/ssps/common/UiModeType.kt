@@ -1,6 +1,6 @@
 /**
  * Author & Developer: Jean Bodenberg
- * GIT: https://github.com/bodenberg/appdimens-ssps.git
+ * GIT: https://github.com/bodenberg/appdimens-sdps.git
  * Date: 2025-10-04
  *
  * Library: AppDimens
@@ -24,9 +24,12 @@
  */
 package com.appdimens.ssps.common
 
+import android.content.Context
 import android.content.res.Configuration
+import android.hardware.SensorManager
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.window.layout.WindowMetricsCalculator
 
 /**
  * EN Defines the Android UI Mode Types for dimension customization,
@@ -91,18 +94,120 @@ enum class UiModeType(val configValue: Int) {
      *
      * PT Qualquer modo de UI não especificado/outros.
      */
-    UNDEFINED(Configuration.UI_MODE_TYPE_UNDEFINED);
+    UNDEFINED(Configuration.UI_MODE_TYPE_UNDEFINED),
+
+    /**
+     * EN Foldable Device (Open state).
+     * PT Dispositivo Dobrável tipo Fold (Estado aberto).
+     */
+    FOLD_OPEN(-101),
+
+    /**
+     * EN Foldable Device (Closed state).
+     * PT Dispositivo Dobrável tipo Fold (Estado fechado).
+     */
+    FOLD_CLOSED(-102),
+
+    /**
+     * EN Flip Device (Open state).
+     * PT Dispositivo Dobrável tipo Flip (Estado aberto).
+     */
+    FLIP_OPEN(-103),
+
+    /**
+     * EN Flip Device (Closed state).
+     * PT Dispositivo Dobrável tipo Flip (Estado fechado).
+     */
+    FLIP_CLOSED(-104),
+
+    /**
+     * EN Foldable Device (Half-opened state).
+     * PT Dispositivo Dobrável tipo Fold (Estado semiaberto).
+     */
+    FOLD_HALF_OPENED(-105),
+
+    /**
+     * EN Flip Device (Half-opened state).
+     * PT Dispositivo Dobrável tipo Flip (Estado semiaberto).
+     */
+    FLIP_HALF_OPENED(-106);
 
     companion object {
         /**
-         * EN Returns the UiModeType corresponding to the Configuration.uiMode value.
+         * EN Returns the UiModeType corresponding to the Configuration.uiMode value,
+         * taking into account physical foldable features using Jetpack WindowManager.
          *
-         * PT Retorna o UiModeType correspondente ao valor de Configuration.uiMode.
+         * PT Retorna o UiModeType correspondente ao valor de Configuration.uiMode,
+         * levando em conta características físicas de dispositivos dobráveis usando Jetpack WindowManager.
+         *
+         * @param context Application context.
+         * @param foldingFeature Optional FoldingFeature obtained from WindowInfoTracker to dynamically adapt.
          */
-        fun fromConfiguration(uiMode: Int): UiModeType {
+        fun fromConfiguration(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): UiModeType {
+            val config = context.resources.configuration
+
+            // EN 1. Try to use Jetpack WindowManager FoldingFeature if provided
+            // PT 1. Tenta usar o FoldingFeature do Jetpack WindowManager se fornecido
+            if (foldingFeature != null) {
+                // If it's a folding feature, we decide if it's Fold or Flip based on orientation,
+                // and if it's open, closed or half_opened based on state.
+
+                val isFold = foldingFeature.orientation == androidx.window.layout.FoldingFeature.Orientation.VERTICAL
+
+                return if (isFold) {
+                    when {
+                        foldingFeature.state == androidx.window.layout.FoldingFeature.State.FLAT -> FOLD_OPEN
+                        foldingFeature.state == androidx.window.layout.FoldingFeature.State.HALF_OPENED -> FOLD_HALF_OPENED
+                        else -> FOLD_CLOSED
+                    }
+                } else {
+                    // Usually horizontal fold is a Flip device.
+                    when {
+                        foldingFeature.state == androidx.window.layout.FoldingFeature.State.FLAT -> FLIP_OPEN
+                        foldingFeature.state == androidx.window.layout.FoldingFeature.State.HALF_OPENED -> FLIP_HALF_OPENED
+                        else -> FLIP_CLOSED
+                    }
+                }
+            }
+
+            // EN 2. Fallback: Check for hinge sensor to identify foldable
+            // PT 2. Fallback: Verifica sensor de dobradiça para identificar dispositivo dobrável
+            val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            // Sensor.TYPE_HINGE_ANGLE is 36
+            val hingeSensor = sensorManager?.getDefaultSensor(36)
+            val isFoldable = hingeSensor != null
+
+            if (isFoldable) {
+                // EN We use Jetpack WindowManager to get the device's maximum window size
+                // PT Usamos Jetpack WindowManager para obter o tamanho máximo da janela do dispositivo
+                val maxMetrics = WindowMetricsCalculator.getOrCreate().computeMaximumWindowMetrics(context)
+                val maxBounds = maxMetrics.bounds
+                val density = context.resources.displayMetrics.density
+
+                val maxSwPx = kotlin.math.min(maxBounds.width(), maxBounds.height())
+                val maxSwDp = maxSwPx / density
+
+                val isFold = maxSwDp >= 600f
+                val currentSwDp = config.smallestScreenWidthDp
+
+                return if (isFold) {
+                    if (currentSwDp >= 600) FOLD_OPEN else FOLD_CLOSED
+                } else {
+                    // EN Flips when open have normal sizes, but when closed they are tiny
+                    // PT Flips quando abertos têm tamanhos normais, mas quando fechados são minúsculos
+                    if (currentSwDp < 400 && config.screenHeightDp < 400) FLIP_CLOSED else FLIP_OPEN
+                }
+            }
+
             // EN The mask is used to extract only the UI Mode TYPE, ignoring night/other flags.
             // PT A máscara é usada para extrair apenas o TIPO do UI Mode, ignorando flags noturnas/outras.
-            val type = uiMode and Configuration.UI_MODE_TYPE_MASK
+            val type = config.uiMode and Configuration.UI_MODE_TYPE_MASK
+
+            if (type == Configuration.UI_MODE_TYPE_TELEVISION ||
+                context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_LEANBACK)) {
+                return TELEVISION
+            }
+
             return entries.firstOrNull { it.configValue == type } ?: NORMAL // Returns NORMAL as default
         }
     }

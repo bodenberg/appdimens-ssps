@@ -25,17 +25,28 @@
 package com.appdimens.ssps.compose
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
+import kotlin.math.abs
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.DpQualifierEntry
+import com.appdimens.ssps.common.Inverter
+import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
 
 /**
@@ -51,14 +62,22 @@ import com.appdimens.ssps.common.UiModeType
  *
  * @property uiModeType The UI mode to which this entry applies (optional).
  * @property dpQualifierEntry The DP qualifier entry (type and minimum value) (optional).
+ * @param orientation The screen orientation (LANDSCAPE, PORTRAIT, DEFAULT).
  * @property customValue The TextUnit (Sp) value to be used.
+ * @param finalQualifierResolver Optional dimension qualifier (e.g., HEIGHT) to be applied at resolution time.
+ * @param fontScale Optional enable/disable font scale.
  * @property priority The application priority of this rule. Lower priorities are evaluated first.
+ * @param inverter The inverter type to adapt scaling width/height on rotation changes (default is Inverter.DEFAULT).
  */
 data class CustomSpEntry(
     val uiModeType: UiModeType? = null,
     val dpQualifierEntry: DpQualifierEntry? = null,
+    val orientation: Orientation? = Orientation.DEFAULT,
     val customValue: TextUnit,
-    val priority: Int
+    val finalQualifierResolver: DpQualifier? = null,
+    val fontScale: Boolean? = true,
+    val priority: Int,
+    val inverter: Inverter? = Inverter.DEFAULT
 )
 
 /**
@@ -74,33 +93,9 @@ data class CustomSpEntry(
  */
 private fun getQualifierValue(qualifier: DpQualifier, configuration: Configuration): Float {
     return when (qualifier) {
-        // EN Returns the smallest screen width in DP. / PT Retorna a largura mínima da tela em DP.
         DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
-        // EN Returns the screen height in DP. / PT Retorna a altura da tela em DP.
         DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
-        // EN Returns the screen width in DP. / PT Retorna a largura da tela em DP.
         DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
-    }
-}
-
-/**
- * EN
- * Maps the UI mode mask from the Android Configuration to the UiModeType enum.
- *
- * PT
- * Mapeia a máscara de modo de UI da Configuração do Android para o enum UiModeType.
- *
- * @param uiMode The 'uiMode' field of the Configuration.
- * @return The corresponding UiModeType.
- */
-fun fromConfiguration(uiMode: Int): UiModeType {
-    // EN Applies the mask to get only the UI type. / PT Aplica a máscara para obter apenas o tipo de UI.
-    return when (uiMode and Configuration.UI_MODE_TYPE_MASK) {
-        Configuration.UI_MODE_TYPE_CAR -> UiModeType.CAR
-        Configuration.UI_MODE_TYPE_TELEVISION -> UiModeType.TELEVISION
-        Configuration.UI_MODE_TYPE_WATCH -> UiModeType.WATCH
-        // EN Default value for mobile, tablet, etc. / PT Valor padrão para celular, tablet, etc.
-        else -> UiModeType.NORMAL
     }
 }
 
@@ -138,6 +133,34 @@ val Int.hsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true)
 /**
  * EN
  * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
+ * using the **Height** qualifier, but acts as **Width** in landscape orientation.
+ * Useful for text scaling based on the screen height (h) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
+ * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação paisagem.
+ * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ */
+@get:Composable
+val Int.hsp_lw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true, Inverter.PH_TO_LW)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
+ * using the **Height** qualifier, but acts as **Width** in portrait orientation.
+ * Useful for text scaling based on the screen height (h) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
+ * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação retrato.
+ * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ */
+@get:Composable
+val Int.hsp_pw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true, Inverter.LH_TO_PW)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
  * using the **Width** qualifier.
  * Useful for text scaling based on the screen width (w).
  *
@@ -148,6 +171,34 @@ val Int.hsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true)
  */
 @get:Composable
 val Int.wsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, true)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
+ * using the **Width** qualifier, but acts as **Height** in landscape orientation.
+ * Useful for text scaling based on the screen width (w) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
+ * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação paisagem.
+ * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ */
+@get:Composable
+val Int.wsp_lh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, true, Inverter.PW_TO_LH)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
+ * using the **Width** qualifier, but acts as **Height** in portrait orientation.
+ * Useful for text scaling based on the screen width (w) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
+ * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação retrato.
+ * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ */
+@get:Composable
+val Int.wsp_ph: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, true, Inverter.LW_TO_PH)
 
 /**
  * EN
@@ -180,6 +231,35 @@ val Int.hem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false)
 /**
  * EN
  * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
+ * using the **Height** qualifier, but acts as **Width** in landscape orientation.
+ * Useful for text scaling based on the screen height (h) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
+ * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação paisagem.
+ * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ */
+@get:Composable
+val Int.hem_lw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false, Inverter.PH_TO_LW)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
+ * using the **Height** qualifier, but acts as **Width** in portrait orientation.
+ * Useful for text scaling based on the screen height (h) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
+ * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação retrato.
+ * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ */
+@get:Composable
+val Int.hem_pw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false, Inverter.LH_TO_PW)
+
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
  * using the **Width** qualifier.
  * Useful for text scaling based on the screen width (w).
  *
@@ -190,6 +270,35 @@ val Int.hem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false)
  */
 @get:Composable
 val Int.wem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, false)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
+ * using the **Width** qualifier, but acts as **Height** in landscape orientation.
+ * Useful for text scaling based on the screen width (w) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
+ * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação paisagem.
+ * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ */
+@get:Composable
+val Int.wem_lh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, false, Inverter.PW_TO_LH)
+
+/**
+ * EN
+ * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
+ * using the **Width** qualifier, but acts as **Height** in portrait orientation.
+ * Useful for text scaling based on the screen width (w) with orientation inversion.
+ *
+ * PT
+ * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
+ * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação retrato.
+ * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ */
+@get:Composable
+val Int.wem_ph: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, false, Inverter.LW_TO_PH)
+
 
 // EN Functions for creating the Scaled class.
 // PT Funções de criação da classe Scaled.
@@ -213,6 +322,14 @@ fun TextUnit.scaledSp(): Scaled = Scaled(this@scaledSp)
  */
 @Composable
 fun Int.scaledSp(): Scaled = this.sp.scaledSp()
+
+// EN Helps extract the activity from context wrapper
+// PT Ajuda a extrair a activity de um context wrapper
+private tailrec fun android.content.Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 // EN Scaled Class
 // PT Classe Scaled
@@ -274,114 +391,221 @@ class Scaled private constructor(
 
     /**
      * EN
-     * Priority 1 rule: Combination of UI Mode and DP Qualifier.
-     * Applicable if the **UI mode** matches AND the screen is **greater than or equal to** the `qualifierValue`.
+     * Priority 1: Most specific qualifier - Combines UiModeType AND Dp Qualifier (sw, h, w).
      *
      * PT
-     * Regra de prioridade 1: Combinação de Modo de UI e Qualificador de DP.
-     * Aplicável se o **modo de UI** corresponder E a tela for **maior ou igual** ao `qualifierValue`.
+     * Prioridade 1: Qualificador mais específico - Combina UiModeType E Qualificador de Dp (sw, h, w).
      */
     fun screen(
         uiModeType: UiModeType,
         qualifierType: DpQualifier,
         qualifierValue: Int,
-        customValue: TextUnit
+        orientation: Orientation? = Orientation.DEFAULT,
+        customValue: TextUnit,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean? = true,
+        inverter: Inverter? = Inverter.DEFAULT
     ): Scaled {
         val entry = CustomSpEntry(
             uiModeType = uiModeType,
             dpQualifierEntry = DpQualifierEntry(qualifierType, qualifierValue),
+            orientation = orientation,
             customValue = customValue,
-            priority = 1
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 1,
+            inverter = inverter
         )
         return Scaled(initialBaseSp, reorderEntries(entry))
     }
 
     /**
      * EN
-     * Overload for `screen` that accepts an `Int` as `customValue`.
+     * Priority 1: Most specific qualifier - Combines UiModeType AND Dp Qualifier (sw, h, w).
+     * This is an overload that accepts an Int for `customValue`.
      *
      * PT
-     * Sobrecarga de `screen` que aceita um `Int` como `customValue`.
+     * Prioridade 1: Qualificador mais específico - Combina UiModeType E Qualificador de Dp (sw, h, w).
+     * Esta é uma sobrecarga que aceita um Int para `customValue`.
      */
     fun screen(
         uiModeType: UiModeType,
         qualifierType: DpQualifier,
         qualifierValue: Int,
-        customValue: Int
+        customValue: Int,
+        finalQualifierResolver: DpQualifier? = null,
+        orientation: Orientation? = Orientation.DEFAULT,
+        fontScale: Boolean? = true,
+        inverter: Inverter? = Inverter.DEFAULT
     ): Scaled {
         val entry = CustomSpEntry(
             uiModeType = uiModeType,
             dpQualifierEntry = DpQualifierEntry(qualifierType, qualifierValue),
+            orientation = orientation,
             customValue = customValue.sp,
-            priority = 1
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 1,
+            inverter = inverter
         )
         return Scaled(initialBaseSp, reorderEntries(entry))
     }
 
     /**
      * EN
-     * Priority 2 rule: UI Mode only.
-     * Applicable if the **UI mode** matches.
+     * Priority 2: UiModeType qualifier (e.g., TELEVISION, WATCH).
      *
      * PT
-     * Regra de prioridade 2: Apenas Modo de UI.
-     * Aplicável se o **modo de UI** corresponder.
+     * Prioridade 2: Qualificador de UiModeType (e.g., TELEVISION, WATCH).
      */
-    fun screen(type: UiModeType, customValue: TextUnit): Scaled {
+    fun screen(type: UiModeType,
+               customValue: TextUnit,
+               finalQualifierResolver: DpQualifier? = null,
+               orientation: Orientation? = Orientation.DEFAULT,
+               fontScale: Boolean? = true,
+               inverter: Inverter? = Inverter.DEFAULT
+    ): Scaled {
         val entry = CustomSpEntry(
             uiModeType = type,
+            orientation = orientation,
             customValue = customValue,
-            priority = 2
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 2,
+            inverter = inverter
         )
         return Scaled(initialBaseSp, reorderEntries(entry))
     }
 
     /**
      * EN
-     * Overload for `screen` that accepts an `Int` as `customValue`.
+     * Priority 2: UiModeType qualifier (e.g., TELEVISION, WATCH).
+     * This is an overload that accepts an Int for `customValue`.
      *
      * PT
-     * Sobrecarga de `screen` que aceita um `Int` como `customValue`.
+     * Prioridade 2: Qualificador de UiModeType (e.g., TELEVISION, WATCH).
+     * Esta é uma sobrecarga que aceita um Int para `customValue`.
      */
-    fun screen(type: UiModeType, customValue: Int): Scaled {
+    fun screen(type: UiModeType,
+               customValue: Int,
+               finalQualifierResolver: DpQualifier? = null,
+               orientation: Orientation? = Orientation.DEFAULT,
+               fontScale: Boolean? = true,
+               inverter: Inverter? = Inverter.DEFAULT
+    ): Scaled {
         val entry = CustomSpEntry(
             uiModeType = type,
+            orientation = orientation,
             customValue = customValue.sp,
-            priority = 2
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 2,
+            inverter = inverter
         )
         return Scaled(initialBaseSp, reorderEntries(entry))
     }
 
     /**
      * EN
-     * Priority 3 rule: DP Qualifier only.
-     * Applicable if the screen is **greater than or equal to** the qualifier `value`.
+     * Priority 3: Dp qualifier (sw, h, w) without UiModeType restriction.
      *
      * PT
-     * Regra de prioridade 3: Apenas Qualificador de DP.
-     * Aplicável se a tela for **maior ou igual** ao `value` do qualificador.
+     * Prioridade 3: Qualificador de Dp (sw, h, w) sem restrição de UiModeType.
      */
-    fun screen(type: DpQualifier, value: Int, customValue: TextUnit): Scaled {
+    fun screen(type: DpQualifier,
+               value: Int,
+               customValue: TextUnit,
+               finalQualifierResolver: DpQualifier? = null,
+               orientation: Orientation? = Orientation.DEFAULT,
+               fontScale: Boolean? = true,
+               inverter: Inverter? = Inverter.DEFAULT
+    ): Scaled {
         val entry = CustomSpEntry(
             dpQualifierEntry = DpQualifierEntry(type, value),
+            orientation = orientation,
             customValue = customValue,
-            priority = 3
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 3,
+            inverter = inverter
         )
         return Scaled(initialBaseSp, reorderEntries(entry))
     }
 
     /**
      * EN
-     * Overload for `screen` that accepts an `Int` as `customValue`.
+     * Priority 3: Dp qualifier (sw, h, w) without UiModeType restriction.
+     * This is an overload that accepts an Int for `customValue`.
      *
      * PT
-     * Sobrecarga de `screen` que aceita um `Int` como `customValue`.
+     * Prioridade 3: Qualificador de Dp (sw, h, w) sem restrição de UiModeType.
+     * Esta é uma sobrecarga que aceita um Int para `customValue`.
      */
-    fun screen(type: DpQualifier, value: Int, customValue: Int): Scaled {
+    fun screen(type: DpQualifier,
+               value: Int,
+               customValue: Int,
+               finalQualifierResolver: DpQualifier? = null,
+               orientation: Orientation? = Orientation.DEFAULT,
+               fontScale: Boolean? = true,
+               inverter: Inverter? = Inverter.DEFAULT): Scaled {
         val entry = CustomSpEntry(
             dpQualifierEntry = DpQualifierEntry(type, value),
+            orientation = orientation,
             customValue = customValue.sp,
-            priority = 3
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 3,
+            inverter = inverter
+        )
+        return Scaled(initialBaseSp, reorderEntries(entry))
+    }
+
+    /**
+     * EN
+     * Priority 4: Orientation.
+     * This is an overload that accepts an Int for `customValue`.
+     *
+     * PT
+     * Prioridade 4: Orientation.
+     * Esta é uma sobrecarga que aceita um Int para `customValue`.
+     */
+    fun screen(orientation: Orientation = Orientation.DEFAULT,
+               customValue: TextUnit,
+               finalQualifierResolver: DpQualifier? = null,
+               fontScale: Boolean? = true,
+               inverter: Inverter? = Inverter.DEFAULT): Scaled {
+        val entry = CustomSpEntry(
+            orientation = orientation,
+            customValue = customValue,
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 4,
+            inverter = inverter
+        )
+        return Scaled(initialBaseSp, reorderEntries(entry))
+    }
+
+    /**
+     * EN
+     * Priority 4: Orientation.
+     * This is an overload that accepts an Int for `customValue`.
+     *
+     * PT
+     * Prioridade 4: Orientation.
+     * Esta é uma sobrecarga que aceita um Int para `customValue`.
+     */
+    fun screen(orientation: Orientation = Orientation.DEFAULT,
+               customValue: Int,
+               finalQualifierResolver: DpQualifier? = null,
+               fontScale: Boolean? = true,
+               inverter: Inverter? = Inverter.DEFAULT): Scaled {
+        val entry = CustomSpEntry(
+            orientation = orientation,
+            customValue = customValue.sp,
+            finalQualifierResolver = finalQualifierResolver,
+            fontScale = fontScale,
+            priority = 4,
+            inverter = inverter
         )
         return Scaled(initialBaseSp, reorderEntries(entry))
     }
@@ -405,8 +629,26 @@ class Scaled private constructor(
     @SuppressLint("ConfigurationScreenWidthHeight") // EN Annotation is necessary as we access screen metrics. / PT A anotação é necessária, pois acessamos métricas da tela.
     @Composable
     private fun resolve(qualifier: DpQualifier, fontScale: Boolean): TextUnit {
+        val context = LocalContext.current
         val configuration = LocalConfiguration.current
-        val currentUiModeType = fromConfiguration(configuration.uiMode)
+
+        // EN Extract FoldingFeature dynamically if context is an Activity
+        // PT Extrai o FoldingFeature dinamicamente se o contexto for uma Activity
+        val activity = context.findActivity()
+        val windowLayoutInfo = remember(activity) {
+            activity?.let {
+                WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it)
+            }
+        }?.collectAsState(initial = null)
+        
+        val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+            ?.filterIsInstance<FoldingFeature>()
+            ?.firstOrNull()
+
+        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+
+        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
         // EN Tries to find the first custom entry that qualifies.
         // The list is checked in the priority order defined in [reorderEntries].
@@ -416,6 +658,14 @@ class Scaled private constructor(
             val qualifierEntry = entry.dpQualifierEntry
             val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
 
+            // EN Checks if the entry orientation matches the actual screen orientation
+            // PT Verifica se a orientação da entrada bate com a orientação atual da tela
+            val orientationMatch = when (entry.orientation) {
+                Orientation.LANDSCAPE -> isLandscape
+                Orientation.PORTRAIT -> isPortrait
+                else -> true
+            }
+
             if (qualifierEntry != null) {
                 // EN Checks if the screen value is GREATER THAN OR EQUAL to the qualifier value.
                 // PT Verifica se o valor da tela é MAIOR OU IGUAL ao valor do qualificador.
@@ -424,19 +674,25 @@ class Scaled private constructor(
                     configuration
                 ) >= qualifierEntry.value
 
-                // EN Priority 1: Must match [uiModeMatch] AND [qualifierMatch].
-                // PT Prioridade 1: Deve casar [uiModeMatch] E [qualifierMatch].
-                if (entry.priority == 1 && uiModeMatch && qualifierMatch) return@firstOrNull true
+                // EN Priority 1: Must match [uiModeMatch] AND [qualifierMatch] AND orientationMatch.
+                // PT Prioridade 1: Deve casar [uiModeMatch] E [qualifierMatch] E orientationMatch.
+                if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
 
-                // EN Priority 3: Must match only [qualifierMatch].
-                // PT Prioridade 3: Deve casar apenas [qualifierMatch].
-                if (entry.priority == 3 && qualifierMatch) return@firstOrNull true
+                // EN Priority 3: Must match only [qualifierMatch] AND orientationMatch.
+                // PT Prioridade 3: Deve casar apenas [qualifierMatch] E orientationMatch.
+                if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
 
                 return@firstOrNull false // EN Did not match P1 or P3. / PT Não casou com P1 ou P3.
             } else {
-                // EN Priority 2: Must match only [uiModeMatch] (without DP qualifier).
-                // PT Prioridade 2: Deve casar apenas [uiModeMatch] (sem qualificador de Dp).
-                return@firstOrNull entry.priority == 2 && uiModeMatch
+                // EN Priority 2: Must match only [uiModeMatch] AND orientationMatch (without DP qualifier).
+                // PT Prioridade 2: Deve casar apenas [uiModeMatch] E orientationMatch (sem qualificador de Dp).
+                if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
+
+                // EN Priority 4: Must match only orientationMatch (without DP qualifier).
+                // PT Prioridade 4: Deve casar apenas orientationMatch (sem qualificador de Dp).
+                if (entry.priority == 4 && orientationMatch) return@firstOrNull true
+
+                return@firstOrNull false // EN Did not match P2 or P4.
             }
         }
 
@@ -444,12 +700,13 @@ class Scaled private constructor(
         // PT Determina o valor de TextUnit a ser usado: customizado ou o base inicial.
         val spToUse: TextUnit = foundEntry?.customValue ?: initialBaseSp
 
-        // EN Applies dynamic scaling to the base/custom value,
-        // using the 'qualifier' passed explicitly by the accessor property.
-        // PT Aplica o dimensionamento dinâmico ao valor base/customizado,
-        // usando o 'qualifier' passado explicitamente pela propriedade de acesso.
+        val finalQualifier = foundEntry?.finalQualifierResolver ?: qualifier
+        val finalFontScale = foundEntry?.fontScale ?: fontScale
+
+        // EN Applies dynamic scaling to the base/custom value.
+        // PT Aplica o dimensionamento dinâmico ao valor base/customizado.
         val baseIntSp = spToUse.value.toInt()
-        return baseIntSp.toDynamicScaledSp(qualifier, fontScale)
+        return baseIntSp.toDynamicScaledSp(finalQualifier, finalFontScale, foundEntry?.inverter ?: Inverter.DEFAULT)
     }
 
     /**
@@ -554,20 +811,37 @@ private fun findResourceIdByName(resourceName: String): Int {
  * @return The dynamically scaled TextUnit (Sp), or the base value if the resource is not found.
  */
 @Composable
-fun Int.toDynamicScaledSp(qualifier: DpQualifier, fontScale: Boolean): TextUnit {
+fun Int.toDynamicScaledSp(qualifier: DpQualifier, fontScale: Boolean, inverter: Inverter = Inverter.DEFAULT): TextUnit {
     // EN Ensures that the value is within a reasonable range for dimension generation.
     // PT Garante que o valor está dentro de uma faixa razoável para a geração de dimensões.
-    require(this in 1..600)
-    "Value must be between 1 and 600 to use the dynamic scaling dimension logic. Current value:: $this"
+    require(this in 1..600) { "Value must be between 1 and 600 to use the dynamic scaling dimension logic. Current value:: $this" }
 
-    val attrName = when (qualifier) {
-        DpQualifier.HEIGHT -> "h" // EN Resource based on height: e.g., _16hdp / PT Recurso com base na altura: ex: _16hdp
-        DpQualifier.WIDTH -> "w"  // EN Resource based on width: e.g., _16wdp / PT Recurso com base na largura: ex: _16wdp
-        else -> "s"               // EN Default (Smallest Width): e.g., _16sdp / PT Padrão (Smallest Width): ex: _16sdp
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    var actualQualifier = qualifier
+
+    when (inverter) {
+        Inverter.PH_TO_LW -> if (isLandscape && qualifier == DpQualifier.HEIGHT) actualQualifier = DpQualifier.WIDTH
+        Inverter.PW_TO_LH -> if (isLandscape && qualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
+        Inverter.LH_TO_PW -> if (isPortrait && qualifier == DpQualifier.HEIGHT) actualQualifier = DpQualifier.WIDTH
+        Inverter.LW_TO_PH -> if (isPortrait && qualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
+        Inverter.DEFAULT -> {}
     }
-    // EN Constructs the expected resource name, e.g., "_16sdp".
-    // PT Constrói o nome do recurso esperado, ex: "_16sdp".
-    val resourceName = "_${this}${attrName}sp"
+
+    val attrName = when (actualQualifier) {
+        DpQualifier.HEIGHT -> "h" // EN Resource based on height: e.g., _16hsp / PT Recurso com base na altura: ex: _16hsp
+        DpQualifier.WIDTH -> "w"  // EN Resource based on width: e.g., _16wsp / PT Recurso com base na largura: ex: _16wsp
+        else -> "s"               // EN Default (Smallest Width): e.g., _16ssp / PT Padrão (Smallest Width): ex: _16ssp
+    }
+
+    // EN Handles negative values, using the "minus" prefix in the naming convention (SSP only supports positive values, but the logic is there).
+    // PT Lida com valores negativos, usando o prefixo "minus" na convenção de nome (SSP só suporta valores positivos, mas a lógica está aí).
+    val prefix = if (this < 0) "minus" else ""
+    // EN Constructs the expected resource name, e.g., "_16ssp", "_minuss16sp", "_w100sp".
+    // PT Constrói o nome do recurso esperado, ex: "_16ssp", "_minuss16sp", "_w100sp".
+    val resourceName = "_${prefix}${abs(this)}${attrName}sp"
     val dimenResourceId = findResourceIdByName(resourceName)
 
     // EN If the resource is found, loads it and converts to Sp.

@@ -129,9 +129,9 @@ fun AppDimensSspExampleScreen() {
             val scaledExample = 10.scaledSp()
                 .screen(UiModeType.TELEVISION, DpQualifier.SMALL_WIDTH, 720, 24)
                 .screen(UiModeType.CAR, 11)
-                .screen(DpQualifier.SMALL_WIDTH, 600, 12)
-                .screen(DpQualifier.HEIGHT, 800, 13)
-                .screen(DpQualifier.WIDTH, 400, 14)
+                .screen(DpQualifier.SMALL_WIDTH, 300, 15)
+                .screen(DpQualifier.HEIGHT, 400, 13)
+                .screen(DpQualifier.WIDTH, 400, 18)
 
             DemoCard(
                 title = "Conditional Scaling (Scaled)",
@@ -249,7 +249,7 @@ fun DemoCard(
  *
  * [PT] Uma visualização para a tela de exemplo do AppDimens SSP.
  */
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "spec:width=673dp,height=841dp")
 @Composable
 fun PreviewAppDimensSspExample() {
     MaterialTheme(colorScheme = lightColorScheme()) {

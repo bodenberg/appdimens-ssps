@@ -14,7 +14,7 @@ val isJitPack = System.getenv("JITPACK") == "true"
         || System.getenv("ci") == "true"
 
 mavenPublishing {
-    coordinates("io.github.bodenberg", "appdimens-ssps", "3.0.0")
+    coordinates("io.github.bodenberg", "appdimens-ssps", "3.0.6")
 
     configure(
         AndroidSingleVariantLibrary(
@@ -180,6 +180,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.window)
     //dokkaPlugin(libs.android.documentation.plugin)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -4,7 +4,7 @@ BASE_DIR = "generated_values_sp"
 
 # Range automático
 MIN_sp = 30
-MAX_sp = 4320
+MAX_sp = 5120
 STEP = 15
 
 # Dispositivos reais
