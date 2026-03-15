@@ -135,11 +135,6 @@ Use dimension resources directly — all values from `1` to `600` are pre-genera
         android:layout_height="wrap_content"
         android:textSize="@dimen/_16hsp"
         android:text="Height Scaled" />
-
-    <!-- SEM: Scales by Smallest Width but ignores system font scale -->
-    <TextView
-        android:textSize="@dimen/_16sem"
-        android:text="No Accessibility Scale" />
 </LinearLayout>
 ```
 
@@ -294,7 +289,7 @@ _{value}{qualifier}
 Examples:
   _16ssp      →  16sp scaled by Smallest Width
   _20wsp      →  20sp scaled by Width
-  _14sem      →  14sp (Smallest Width) ignoring font scale
+  _20hsp      →  20sp scaled by Height
 ```
 
 Range: **1 to 600** for all qualifiers.
