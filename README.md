@@ -328,6 +328,9 @@ Range: **1 to 600** for all qualifiers.
 
 ![Extra demonstration](IMAGES/image.png)
 
+> [!IMPORTANT]
+> **Recommended Distribution:** It is highly recommended to generate and distribute your application as an **AAB (Android App Bundle)**. This allows the Android system to deliver only the resource qualifiers (like `values-sw600dp`) that match the specific device downloading the app, significantly reducing the final APK size.
+
 ---
 
 *Created with the best traditions of responsive and accessible typography for the Android ecosystem.*
