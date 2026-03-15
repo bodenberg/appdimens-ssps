@@ -303,7 +303,7 @@ Range: **1 to 600** for all qualifiers.
 | SSP (Smallest Width) | ✅ | ✅ |
 | HSP (Height) | ✅ | ❌ |
 | WSP (Width) | ✅ | ❌ |
-| SEM (Ignore font scale) | ✅ | ❌ |
+| SEM, HEM, WEM (Ignore font scale) | ✅ | ❌ |
 | Compose extensions | ✅ `.ssp`, `.hsp`, `.wsp` | ❌ |
 | Code-level API | ✅ `DimenSsp` object | ❌ |
 | Conditional builder | ✅ `DimenSspScaled` | ❌ |
