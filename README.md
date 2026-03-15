@@ -10,7 +10,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bodenberg:appdimens-ssps:3.0.8")
+    implementation("io.github.bodenberg:appdimens-ssps:3.0.9")
 }
 ```
 
@@ -78,16 +78,19 @@ import com.appdimens.ssps.compose.sspMode
 import com.appdimens.ssps.compose.sspQualifier
 import com.appdimens.ssps.compose.sspScreen
 
-// Rotate: 16.ssp default, 24.ssp in Landscape
-Text("Scalable", fontSize = 16.sspRotate(24))
+// Rotate Facilitators:
+// 1. Int variant (Scales result by default)
+val size1 = 16.sspRotate(24) // 16.ssp default, 24.ssp in Landscape
 
-// Mode: 16.ssp default, 40.ssp on TV
+// 2. TextUnit variant (Returns raw Sp if not in Landscape)
+val size2 = 16.ssp.sspRotatePlain(24) // 16.ssp default, 24.ssp in Landscape, raw 16.sp otherwise
+
+// 3. TextUnit variant (Follows Int logic)
+val size3 = 16.sp.sspRotate(24) // 16.ssp default, 24.ssp in Landscape
+
+// Other Facilitators:
 val modeVal = 16.sspMode(40, UiModeType.TELEVISION)
-
-// Qualifier: 16.ssp default, 24.ssp when sw ≥ 600dp
 val qualVal = 16.sspQualifier(24, DpQualifier.SMALL_WIDTH, 600)
-
-// Screen: 16.ssp default, 32.ssp on TV with sw ≥ 600dp
 val scrVal = 16.sspScreen(32, UiModeType.TELEVISION, DpQualifier.SMALL_WIDTH, 600)
 ```
 

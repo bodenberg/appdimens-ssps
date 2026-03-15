@@ -63,6 +63,7 @@ fun Int.sspRotate(
     rotationValue: Int,
     finalQualifierResolver: DpQualifier = DpQualifier.SMALL_WIDTH,
     orientation: Orientation = Orientation.LANDSCAPE,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val configuration = LocalConfiguration.current
@@ -74,7 +75,8 @@ fun Int.sspRotate(
     return if (isTargetOrientation) {
         rotationValue.toDynamicScaledSp(finalQualifierResolver, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale)
+        val qualifier = if (enableAdjust) finalQualifierResolver else DpQualifier.SMALL_WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -83,9 +85,30 @@ fun TextUnit.sspRotate(
     rotationValue: Int,
     finalQualifierResolver: DpQualifier = DpQualifier.SMALL_WIDTH,
     orientation: Orientation = Orientation.LANDSCAPE,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().sspRotate(rotationValue, finalQualifierResolver, orientation, fontScale)
+    return this.value.toInt().sspRotate(rotationValue, finalQualifierResolver, orientation, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.sspRotatePlain(
+    rotationValue: Int,
+    finalQualifierResolver: DpQualifier = DpQualifier.SMALL_WIDTH,
+    orientation: Orientation = Orientation.LANDSCAPE,
+    fontScale: Boolean = true
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val isTargetOrientation = when (orientation) {
+        Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        else -> false
+    }
+    return if (isTargetOrientation) {
+        rotationValue.toDynamicScaledSp(finalQualifierResolver, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -106,6 +129,7 @@ fun Int.hspRotate(
     rotationValue: Int,
     finalQualifierResolver: DpQualifier = DpQualifier.HEIGHT,
     orientation: Orientation = Orientation.LANDSCAPE,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val configuration = LocalConfiguration.current
@@ -117,7 +141,8 @@ fun Int.hspRotate(
     return if (isTargetOrientation) {
         rotationValue.toDynamicScaledSp(finalQualifierResolver, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale)
+        val qualifier = if (enableAdjust) finalQualifierResolver else DpQualifier.HEIGHT
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -126,9 +151,30 @@ fun TextUnit.hspRotate(
     rotationValue: Int,
     finalQualifierResolver: DpQualifier = DpQualifier.HEIGHT,
     orientation: Orientation = Orientation.LANDSCAPE,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().hspRotate(rotationValue, finalQualifierResolver, orientation, fontScale)
+    return this.value.toInt().hspRotate(rotationValue, finalQualifierResolver, orientation, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.hspRotatePlain(
+    rotationValue: Int,
+    finalQualifierResolver: DpQualifier = DpQualifier.HEIGHT,
+    orientation: Orientation = Orientation.LANDSCAPE,
+    fontScale: Boolean = true
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val isTargetOrientation = when (orientation) {
+        Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        else -> false
+    }
+    return if (isTargetOrientation) {
+        rotationValue.toDynamicScaledSp(finalQualifierResolver, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -149,6 +195,7 @@ fun Int.wspRotate(
     rotationValue: Int,
     finalQualifierResolver: DpQualifier = DpQualifier.WIDTH,
     orientation: Orientation = Orientation.LANDSCAPE,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val configuration = LocalConfiguration.current
@@ -160,7 +207,8 @@ fun Int.wspRotate(
     return if (isTargetOrientation) {
         rotationValue.toDynamicScaledSp(finalQualifierResolver, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale)
+        val qualifier = if (enableAdjust) finalQualifierResolver else DpQualifier.WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -169,9 +217,30 @@ fun TextUnit.wspRotate(
     rotationValue: Int,
     finalQualifierResolver: DpQualifier = DpQualifier.WIDTH,
     orientation: Orientation = Orientation.LANDSCAPE,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().wspRotate(rotationValue, finalQualifierResolver, orientation, fontScale)
+    return this.value.toInt().wspRotate(rotationValue, finalQualifierResolver, orientation, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.wspRotatePlain(
+    rotationValue: Int,
+    finalQualifierResolver: DpQualifier = DpQualifier.WIDTH,
+    orientation: Orientation = Orientation.LANDSCAPE,
+    fontScale: Boolean = true
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val isTargetOrientation = when (orientation) {
+        Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        else -> false
+    }
+    return if (isTargetOrientation) {
+        rotationValue.toDynamicScaledSp(finalQualifierResolver, fontScale)
+    } else {
+        this
+    }
 }
 
 // EN Helps extract the activity from context wrapper (Sp version)
@@ -204,6 +273,7 @@ fun Int.sspMode(
     modeValue: Int,
     uiModeType: UiModeType,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val context = LocalContext.current
@@ -217,7 +287,8 @@ fun Int.sspMode(
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.SMALL_WIDTH) else DpQualifier.SMALL_WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -226,9 +297,32 @@ fun TextUnit.sspMode(
     modeValue: Int,
     uiModeType: UiModeType,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().sspMode(modeValue, uiModeType, finalQualifierResolver, fontScale)
+    return this.value.toInt().sspMode(modeValue, uiModeType, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.sspModePlain(
+    modeValue: Int,
+    uiModeType: UiModeType,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val context = LocalContext.current
+    val activity = context.findActivitySp()
+    val windowLayoutInfo = remember(activity) {
+        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
+    }?.collectAsState(initial = null)
+    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
+    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    return if (currentUiModeType == uiModeType) {
+        modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -250,6 +344,7 @@ fun Int.hspMode(
     modeValue: Int,
     uiModeType: UiModeType,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val context = LocalContext.current
@@ -263,7 +358,8 @@ fun Int.hspMode(
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.HEIGHT) else DpQualifier.HEIGHT
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -272,9 +368,32 @@ fun TextUnit.hspMode(
     modeValue: Int,
     uiModeType: UiModeType,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().hspMode(modeValue, uiModeType, finalQualifierResolver, fontScale)
+    return this.value.toInt().hspMode(modeValue, uiModeType, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.hspModePlain(
+    modeValue: Int,
+    uiModeType: UiModeType,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val context = LocalContext.current
+    val activity = context.findActivitySp()
+    val windowLayoutInfo = remember(activity) {
+        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
+    }?.collectAsState(initial = null)
+    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
+    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    return if (currentUiModeType == uiModeType) {
+        modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -296,6 +415,7 @@ fun Int.wspMode(
     modeValue: Int,
     uiModeType: UiModeType,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val context = LocalContext.current
@@ -309,7 +429,8 @@ fun Int.wspMode(
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.WIDTH) else DpQualifier.WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -318,9 +439,32 @@ fun TextUnit.wspMode(
     modeValue: Int,
     uiModeType: UiModeType,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().wspMode(modeValue, uiModeType, finalQualifierResolver, fontScale)
+    return this.value.toInt().wspMode(modeValue, uiModeType, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.wspModePlain(
+    modeValue: Int,
+    uiModeType: UiModeType,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val context = LocalContext.current
+    val activity = context.findActivitySp()
+    val windowLayoutInfo = remember(activity) {
+        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
+    }?.collectAsState(initial = null)
+    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
+    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    return if (currentUiModeType == uiModeType) {
+        modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
+    } else {
+        this
+    }
 }
 
 // EN DpQualifier facilitator extensions for Sp.
@@ -346,6 +490,7 @@ fun Int.sspQualifier(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val configuration = LocalConfiguration.current
@@ -353,7 +498,8 @@ fun Int.sspQualifier(
     return if (qualifierMatch) {
         qualifiedValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.SMALL_WIDTH) else DpQualifier.SMALL_WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -363,9 +509,27 @@ fun TextUnit.sspQualifier(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().sspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, fontScale)
+    return this.value.toInt().sspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.sspQualifierPlain(
+    qualifiedValue: Int,
+    qualifierType: DpQualifier,
+    qualifierValue: Int,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
+    return if (qualifierMatch) {
+        qualifiedValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -386,6 +550,7 @@ fun Int.hspQualifier(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val configuration = LocalConfiguration.current
@@ -393,7 +558,8 @@ fun Int.hspQualifier(
     return if (qualifierMatch) {
         qualifiedValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.HEIGHT) else DpQualifier.HEIGHT
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -403,9 +569,27 @@ fun TextUnit.hspQualifier(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().hspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, fontScale)
+    return this.value.toInt().hspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.hspQualifierPlain(
+    qualifiedValue: Int,
+    qualifierType: DpQualifier,
+    qualifierValue: Int,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
+    return if (qualifierMatch) {
+        qualifiedValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -426,6 +610,7 @@ fun Int.wspQualifier(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val configuration = LocalConfiguration.current
@@ -433,7 +618,8 @@ fun Int.wspQualifier(
     return if (qualifierMatch) {
         qualifiedValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.WIDTH) else DpQualifier.WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -443,9 +629,27 @@ fun TextUnit.wspQualifier(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().wspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, fontScale)
+    return this.value.toInt().wspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.wspQualifierPlain(
+    qualifiedValue: Int,
+    qualifierType: DpQualifier,
+    qualifierValue: Int,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
+    return if (qualifierMatch) {
+        qualifiedValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
+    } else {
+        this
+    }
 }
 
 // EN UiModeType + DpQualifier combined facilitator extensions for Sp.
@@ -472,6 +676,7 @@ fun Int.sspScreen(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val context = LocalContext.current
@@ -488,7 +693,8 @@ fun Int.sspScreen(
     return if (uiModeMatch && qualifierMatch) {
         screenValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.SMALL_WIDTH) else DpQualifier.SMALL_WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -499,9 +705,37 @@ fun TextUnit.sspScreen(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().sspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, fontScale)
+    return this.value.toInt().sspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.sspScreenPlain(
+    screenValue: Int,
+    uiModeType: UiModeType,
+    qualifierType: DpQualifier,
+    qualifierValue: Int,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val activity = context.findActivitySp()
+    val windowLayoutInfo = remember(activity) {
+        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
+    }?.collectAsState(initial = null)
+    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
+    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val uiModeMatch = currentUiModeType == uiModeType
+    val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
+    return if (uiModeMatch && qualifierMatch) {
+        screenValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -523,6 +757,7 @@ fun Int.hspScreen(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val context = LocalContext.current
@@ -539,7 +774,8 @@ fun Int.hspScreen(
     return if (uiModeMatch && qualifierMatch) {
         screenValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.HEIGHT) else DpQualifier.HEIGHT
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -550,9 +786,37 @@ fun TextUnit.hspScreen(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().hspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, fontScale)
+    return this.value.toInt().hspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.hspScreenPlain(
+    screenValue: Int,
+    uiModeType: UiModeType,
+    qualifierType: DpQualifier,
+    qualifierValue: Int,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val activity = context.findActivitySp()
+    val windowLayoutInfo = remember(activity) {
+        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
+    }?.collectAsState(initial = null)
+    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
+    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val uiModeMatch = currentUiModeType == uiModeType
+    val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
+    return if (uiModeMatch && qualifierMatch) {
+        screenValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
+    } else {
+        this
+    }
 }
 
 /**
@@ -574,6 +838,7 @@ fun Int.wspScreen(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
     val context = LocalContext.current
@@ -590,7 +855,8 @@ fun Int.wspScreen(
     return if (uiModeMatch && qualifierMatch) {
         screenValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
     } else {
-        this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale)
+        val qualifier = if (enableAdjust) (finalQualifierResolver ?: DpQualifier.WIDTH) else DpQualifier.WIDTH
+        this.toDynamicScaledSp(qualifier, fontScale)
     }
 }
 
@@ -601,7 +867,35 @@ fun TextUnit.wspScreen(
     qualifierType: DpQualifier,
     qualifierValue: Int,
     finalQualifierResolver: DpQualifier? = null,
+    enableAdjust: Boolean = false,
     fontScale: Boolean = true
 ): TextUnit {
-    return this.value.toInt().wspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, fontScale)
+    return this.value.toInt().wspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
+}
+
+@Composable
+fun TextUnit.wspScreenPlain(
+    screenValue: Int,
+    uiModeType: UiModeType,
+    qualifierType: DpQualifier,
+    qualifierValue: Int,
+    finalQualifierResolver: DpQualifier? = null,
+    fontScale: Boolean = true
+): TextUnit {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val activity = context.findActivitySp()
+    val windowLayoutInfo = remember(activity) {
+        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
+    }?.collectAsState(initial = null)
+    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
+        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
+    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val uiModeMatch = currentUiModeType == uiModeType
+    val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
+    return if (uiModeMatch && qualifierMatch) {
+        screenValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
+    } else {
+        this
+    }
 }
