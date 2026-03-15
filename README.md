@@ -13,6 +13,7 @@ Welcome to the official documentation for the **AppDimens SSPS** library.
 * **Foldable Device Support (`FoldingFeature`):** Seamless integration with Jetpack WindowManager to detect half-opened/closed states of Folds and Flips, adapting text sizes dynamically.
 * **Orientation Inverters (`Inverter`):** New powerful extensions like `.hsp_lw`, `.wsp_ph`, `.hem_pw` to dynamically flip layout dimensions and font scaling behaviors based on Landscape or Portrait orientations.
 * **Advanced `Scaled` Builder:** More granular conditional scaling using `DpQualifier`, `Orientation`, `Inverter`, and font scaling preferences.
+* **Facilitator Extensions:** Shortcuts like `.sspRotate()`, `.sspMode()`, `.sspQualifier()`, and `.sspScreen()` for quick conditional scaling without the full builder.
 
 ## ⚙️ What does it do?
 
@@ -22,6 +23,7 @@ It provides thousands of pre-calculated `@dimen` resources (from `1` to `600`) r
 * **WSP (Width SP):** Scales text specifically based on the device's exact horizontal width in the current orientation (e.g., `@dimen/_16wsp` or `16.wsp`).
 * **HSP (Height SP):** Scales text specifically based on the device's exact vertical height (e.g., `@dimen/_16hsp` or `16.hsp`).
 * **SEM, WEM, HEM (Ignore Font Scale):** The `.sem`, `.wem`, `.hem` variants work the same way as the standard SSP/WSP/HSP resources but **do not follow the system's accessibility font scale settings**. They are useful for texts that shouldn't break strict component designs regardless of user accessibility preferences.
+* **Facilitators:** Quick-access functions like `.sspRotate(40)` or `.hspMode(20, UiModeType.TELEVISION)` to handle complex UI logic in a single line.
 * **Dynamic Conditionals (Compose):** Facilitates adapting the font based on the device type (Car, TV, Watch), orientation, qualifiers, and more through the `.scaledSp()` instruction.
 * **Inverters:** Added inverted variants like `.wsp_lh` (Width SP that acts as Height SP in Landscape) to maintain proportional designs upon screen rotation.
 
@@ -57,9 +59,16 @@ To install, simply add it to your `build.gradle` (dependency):
 
 ```kotlin
 dependencies {
-    implementation("io.github.bodenberg:appdimens-ssps:3.0.6")
+    implementation("io.github.bodenberg:appdimens-ssps:3.0.8")
 }
 ```
+
+### 💎 Platform Parity
+One of the core strengths of **AppDimens SSPS** is the absolute parity between platforms. Whether you are using traditional **XML**, **Kotlin/Java** code, or **Jetpack Compose**, the scaling logic, resource resolution, and orientation behaviors are mathematically identical.
+
+*   **XML:** Uses `@dimen/_16ssp`.
+*   **Kotlin/Java:** Uses `16.ssp(context)`.
+*   **Compose:** Uses `16.ssp`.
 
 ### Quick Example in XML Layouts:
 ```xml
@@ -106,6 +115,40 @@ val dynamicFontSize = 16.sp.scaledSp()
     // On devices with Smallest Width >= 600dp, use 24.ssp
     .screen(DpQualifier.SMALL_WIDTH, 600, customValue = 24.ssp)
     .ssp // Default fallback is 16.ssp
+```
+
+## 🛠️ Facilitator Extensions (Shortcuts)
+
+Facilitators provide a shorter syntax for common conditional scenarios, available for both **Compose** and **Kotlin/Java** code.
+
+### 🌀 Orientation Rotation
+Use `.sspRotate()`, `.hspRotate()`, or `.wspRotate()` to specify a different value when the device rotates.
+```kotlin
+// Compose
+Text("Scaling...", fontSize = 20.sspRotate(rotationValue = 30)) // 20.ssp by default, 30.ssp in Landscape
+
+// Kotlin (Non-Compose)
+val size = 20.sspRotate(context, rotationValue = 30) // Returns Float
+```
+
+### 📺 UI Mode (TV, Car, etc.)
+Use `.sspMode()`, `.hspMode()`, or `.wspMode()` to adapt font sizes for specific device types.
+```kotlin
+// Compose
+Text("Mode...", fontSize = 16.sspMode(modeValue = 32, uiModeType = UiModeType.TELEVISION))
+
+// Kotlin (Non-Compose)
+val size = 16.sspMode(context, modeValue = 32, uiModeType = UiModeType.TELEVISION)
+```
+
+### 📏 Dp Qualifier
+Use `.sspQualifier()` for threshold-based scaling (e.g., Smallest Width >= 600dp).
+```kotlin
+// Compose
+val textPadding = 24.sspQualifier(qualifiedValue = 48, qualifierType = DpQualifier.SMALL_WIDTH, qualifierValue = 600)
+
+// Kotlin (Non-Compose)
+val size = 24.sspQualifier(context, 48, DpQualifier.SMALL_WIDTH, 600)
 ```
 
 ![Extra demonstration](IMAGES/image.png)

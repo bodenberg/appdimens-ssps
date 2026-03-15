@@ -1,6 +1,6 @@
 /**
  * Author & Developer: Jean Bodenberg
- * GIT: https://github.com/bodenberg/appdimens.git
+ * GIT: https://github.com/bodenberg/appdimens-ssps.git
  * Date: 2025-10-04
  *
  * Library: AppDimens
@@ -25,796 +25,358 @@
 package com.appdimens.ssps.compose
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.window.layout.FoldingFeature
-import androidx.window.layout.WindowInfoTracker
-import kotlin.math.abs
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.appdimens.ssps.common.DpQualifier
-import com.appdimens.ssps.common.DpQualifierEntry
 import com.appdimens.ssps.common.Inverter
-import com.appdimens.ssps.common.Orientation
-import com.appdimens.ssps.common.UiModeType
+import kotlin.math.abs
+
+// EN Composable extensions for quick dynamic text scaling (Sp) using the DP XML resources.
+// PT Extensões Composable para escalonamento dinâmico rápido de texto (Sp) usando os recursos XML de DP.
 
 /**
  * EN
- * Represents a custom text dimension (Sp) configuration entry.
- * Used to define specific text (Sp) values based on the UI mode
- * (e.g., car, TV), DP qualifier (e.g., smallest width), and priority.
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Smallest Width (swDP)**.
+ * Reads the pre-calculated DP resource (e.g., `_16sdp`) and converts it to Sp, respecting
+ * the user's font scale setting.
+ * Usage example: `16.ssp`.
  *
  * PT
- * Representa uma entrada de configuração de dimensão de texto (Sp) personalizada.
- * Usada para definir valores de texto (Sp) específicos com base no modo de UI
- * (ex: carro, TV), no qualificador de DP (ex: largura mínima) e na prioridade.
- *
- * @property uiModeType The UI mode to which this entry applies (optional).
- * @property dpQualifierEntry The DP qualifier entry (type and minimum value) (optional).
- * @param orientation The screen orientation (LANDSCAPE, PORTRAIT, DEFAULT).
- * @property customValue The TextUnit (Sp) value to be used.
- * @param finalQualifierResolver Optional dimension qualifier (e.g., HEIGHT) to be applied at resolution time.
- * @param fontScale Optional enable/disable font scale.
- * @property priority The application priority of this rule. Lower priorities are evaluated first.
- * @param inverter The inverter type to adapt scaling width/height on rotation changes (default is Inverter.DEFAULT).
- */
-data class CustomSpEntry(
-    val uiModeType: UiModeType? = null,
-    val dpQualifierEntry: DpQualifierEntry? = null,
-    val orientation: Orientation? = Orientation.DEFAULT,
-    val customValue: TextUnit,
-    val finalQualifierResolver: DpQualifier? = null,
-    val fontScale: Boolean? = true,
-    val priority: Int,
-    val inverter: Inverter? = Inverter.DEFAULT
-)
-
-/**
- * EN
- * Returns the DP configuration value (as a float) for a specific DpQualifier.
- *
- * PT
- * Retorna o valor de configuração de DP (em float) para um DpQualifier específico.
- *
- * @param qualifier The type of qualifier (SMALL_WIDTH, HEIGHT, WIDTH).
- * @param configuration The current resource configuration.
- * @return The corresponding DP value in the configuration.
- */
-private fun getQualifierValue(qualifier: DpQualifier, configuration: Configuration): Float {
-    return when (qualifier) {
-        DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
-        DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
-        DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
-    }
-}
-
-// EN Int extensions for dynamic text scaling (Sp).
-// PT Extensões de Int para escalonamento dinâmico de texto (Sp).
-
-/**
- * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Smallest Width** qualifier.
- * Useful for text scaling based on the most limiting dimension (sw).
- *
- * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Smallest Width (Largura Mínima)**.
- * Útil para escalonamento de texto baseado na dimensão mais limitante (sw).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**.
+ * Lê o recurso DP pré-calculado (ex: `_16sdp`) e converte para Sp, respeitando
+ * a configuração de escala de fonte do usuário.
+ * Exemplo de uso: `16.ssp`.
  */
 @get:Composable
-val Int.ssp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, true)
+val Int.ssp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Height** qualifier.
- * Useful for text scaling based on the screen height (h).
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)**, but
+ * in portrait orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `32.sspPh`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Height (Altura)**.
- * Útil para escalonamento de texto baseado na altura da tela (h).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**, mas
+ * na orientação retrato atua como **Altura da Tela (hDP)**.
+ * Exemplo de uso: `32.sspPh`.
  */
 @get:Composable
-val Int.hsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true)
+val Int.sspPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, inverter = Inverter.SW_TO_PH)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Height** qualifier, but acts as **Width** in landscape orientation.
- * Useful for text scaling based on the screen height (h) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)**, but
+ * in landscape orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `32.sspLh`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação paisagem.
- * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**, mas
+ * na orientação paisagem atua como **Altura da Tela (hDP)**.
+ * Exemplo de uso: `32.sspLh`.
  */
 @get:Composable
-val Int.hsp_lw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true, Inverter.PH_TO_LW)
+val Int.sspLh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, inverter = Inverter.SW_TO_LH)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Height** qualifier, but acts as **Width** in portrait orientation.
- * Useful for text scaling based on the screen height (h) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)**, but
+ * in portrait orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.sspPw`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação retrato.
- * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**, mas
+ * na orientação retrato atua como **Largura da Tela (wDP)**.
+ * Exemplo de uso: `32.sspPw`.
  */
 @get:Composable
-val Int.hsp_pw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, true, Inverter.LH_TO_PW)
+val Int.sspPw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, inverter = Inverter.SW_TO_PW)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Width** qualifier.
- * Useful for text scaling based on the screen width (w).
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)**, but
+ * in landscape orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.sspLw`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Width (Largura)**.
- * Útil para escalonamento de texto baseado na largura da tela (w).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**, mas
+ * na orientação paisagem atua como **Largura da Tela (wDP)**.
+ * Exemplo de uso: `32.sspLw`.
  */
 @get:Composable
-val Int.wsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, true)
+val Int.sspLw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, inverter = Inverter.SW_TO_LW)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Width** qualifier, but acts as **Height** in landscape orientation.
- * Useful for text scaling based on the screen width (w) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Height (hDP)**.
+ * Usage example: `32.hsp`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação paisagem.
- * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)**.
+ * Exemplo de uso: `32.hsp`.
  */
 @get:Composable
-val Int.wsp_lh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, true, Inverter.PW_TO_LH)
+val Int.hsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale = true)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp)
- * using the **Width** qualifier, but acts as **Height** in portrait orientation.
- * Useful for text scaling based on the screen width (w) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Height (hDP)**, but
+ * in landscape orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.hspLw`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente
- * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação retrato.
- * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)**, mas
+ * na orientação paisagem atua como **Largura da Tela (wDP)**.
+ * Exemplo de uso: `32.hspLw`.
  */
 @get:Composable
-val Int.wsp_ph: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, true, Inverter.LW_TO_PH)
+val Int.hspLw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale = true, inverter = Inverter.PH_TO_LW)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Smallest Width** qualifier.
- * Useful for text scaling based on the most limiting dimension (sw).
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Height (hDP)**, but
+ * in portrait orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.hspPw`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Smallest Width (Largura Mínima)**.
- * Útil para escalonamento de texto baseado na dimensão mais limitante (sw).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)**, mas
+ * na orientação retrato atua como **Largura da Tela (wDP)**.
+ * Exemplo de uso: `32.hspPw`.
  */
 @get:Composable
-val Int.sem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, false)
+val Int.hspPw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale = true, inverter = Inverter.LH_TO_PW)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Height** qualifier.
- * Useful for text scaling based on the screen height (h).
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Width (wDP)**.
+ * Usage example: `100.wsp`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Height (Altura)**.
- * Útil para escalonamento de texto baseado na altura da tela (h).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)**.
+ * Exemplo de uso: `100.wsp`.
  */
 @get:Composable
-val Int.hem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false)
+val Int.wsp: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale = true)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Height** qualifier, but acts as **Width** in landscape orientation.
- * Useful for text scaling based on the screen height (h) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Width (wDP)**, but
+ * in landscape orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `100.wspLh`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação paisagem.
- * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)**, mas
+ * na orientação paisagem atua como **Altura da Tela (hDP)**.
+ * Exemplo de uso: `100.wspLh`.
  */
 @get:Composable
-val Int.hem_lw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false, Inverter.PH_TO_LW)
+val Int.wspLh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale = true, inverter = Inverter.PW_TO_LH)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Height** qualifier, but acts as **Width** in portrait orientation.
- * Useful for text scaling based on the screen height (h) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Width (wDP)**, but
+ * in portrait orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `100.wspPh`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Height (Altura)**, mas atua como **Width (Largura)** na orientação retrato.
- * Útil para escalonamento de texto baseado na altura da tela (h) com inversão de orientação.
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)**, mas
+ * na orientação retrato atua como **Altura da Tela (hDP)**.
+ * Exemplo de uso: `100.wspPh`.
  */
 @get:Composable
-val Int.hem_pw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, false, Inverter.LH_TO_PW)
+val Int.wspPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale = true, inverter = Inverter.LW_TO_PH)
 
+// EN WITHOUT FONT SCALE variants (sem escala de fonte)
+// PT Variantes SEM ESCALA DE FONTE
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Width** qualifier.
- * Useful for text scaling based on the screen width (w).
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** (WITHOUT FONT SCALE).
+ * Usage example: `16.sem`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Width (Largura)**.
- * Útil para escalonamento de texto baseado na largura da tela (w).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** (SEM ESCALA DE FONTE).
+ * Exemplo de uso: `16.sem`.
  */
 @get:Composable
-val Int.wem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, false)
+val Int.sem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = false)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Width** qualifier, but acts as **Height** in landscape orientation.
- * Useful for text scaling based on the screen width (w) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** (WITHOUT FONT SCALE), but
+ * in portrait orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `32.semPh`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação paisagem.
- * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) com dimensionamento baseado na **Smallest Width**, mas
+ * na orientação retrato atua como Altura da Tela.
+ * Exemplo de uso: `32.semPh`.
  */
 @get:Composable
-val Int.wem_lh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, false, Inverter.PW_TO_LH)
+val Int.semPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = false, inverter = Inverter.SW_TO_PH)
 
 /**
  * EN
- * Composable extension for Int that returns a dynamically scaled TextUnit (Sp) (WITHOUT FONT SCALE)
- * using the **Width** qualifier, but acts as **Height** in portrait orientation.
- * Useful for text scaling based on the screen width (w) with orientation inversion.
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** (WITHOUT FONT SCALE), but
+ * in landscape orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `32.semLh`.
  *
  * PT
- * Extensão Composable para Int que retorna um TextUnit (Sp) escalado dinamicamente (SEM FONTE SCALE)
- * usando o qualificador **Width (Largura)**, mas atua como **Height (Altura)** na orientação retrato.
- * Útil para escalonamento de texto baseado na largura da tela (w) com inversão de orientação.
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) com dimensionamento baseado na **Smallest Width**, mas
+ * na orientação paisagem atua como Altura da Tela.
+ * Exemplo de uso: `32.semLh`.
  */
 @get:Composable
-val Int.wem_ph: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, false, Inverter.LW_TO_PH)
-
-
-// EN Functions for creating the Scaled class.
-// PT Funções de criação da classe Scaled.
+val Int.semLh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = false, inverter = Inverter.SW_TO_LH)
 
 /**
  * EN
- * Starts the `Scaled` build chain from a `TextUnit`.
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** (WITHOUT FONT SCALE), but
+ * in portrait orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.semPw`.
  *
  * PT
- * Inicia a cadeia de construção `Scaled` a partir de um `TextUnit`.
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) com dimensionamento baseado na **Smallest Width**, mas
+ * na orientação retrato atua como Largura da Tela.
+ * Exemplo de uso: `32.semPw`.
  */
-@Composable
-fun TextUnit.scaledSp(): Scaled = Scaled(this@scaledSp)
+@get:Composable
+val Int.semPw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = false, inverter = Inverter.SW_TO_PW)
 
 /**
  * EN
- * Starts the `Scaled` build chain from an `Int` (converted to Sp).
+ * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** (WITHOUT FONT SCALE), but
+ * in landscape orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.semLw`.
  *
  * PT
- * Inicia a cadeia de construção `Scaled` a partir de um `Int` (convertido para Sp).
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) com dimensionamento baseado na **Smallest Width**, mas
+ * na orientação paisagem atua como Largura da Tela.
+ * Exemplo de uso: `32.semLw`.
  */
-@Composable
-fun Int.scaledSp(): Scaled = this.sp.scaledSp()
-
-// EN Helps extract the activity from context wrapper
-// PT Ajuda a extrair a activity de um context wrapper
-private tailrec fun android.content.Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
-
-// EN Scaled Class
-// PT Classe Scaled
+@get:Composable
+val Int.semLw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = false, inverter = Inverter.SW_TO_LW)
 
 /**
  * EN
- * The main class for applying dynamic text scaling (Sp) with conditional logic.
- * Allows defining specific Sp values for different screen configurations
- * (UI mode, smallest width, height, width).
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Height (hDP)** (WITHOUT FONT SCALE).
+ * Usage example: `32.hem`.
  *
  * PT
- * A classe principal para aplicar escalonamento dinâmico de texto (Sp) com lógica condicional.
- * Permite a definição de valores Sp específicos para diferentes configurações de tela
- * (modo de UI, largura mínima, altura, largura).
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** (SEM ESCALA DE FONTE).
+ * Exemplo de uso: `32.hem`.
  */
-@Stable
-class Scaled private constructor(
-    private val initialBaseSp: TextUnit,
-    private val sortedCustomEntries: List<CustomSpEntry> = emptyList()
-) {
-
-    /**
-     * EN
-     * Secondary constructor to start the build chain.
-     *
-     * PT
-     * Construtor secundário para iniciar a cadeia de construção.
-     * @param initialBaseSp The base Sp value to be scaled.
-     */
-    constructor(initialBaseSp: TextUnit) : this(initialBaseSp, emptyList())
-
-    /**
-     * EN
-     * Adds a new custom entry and re-sorts the list.
-     * Sorting is crucial for the resolution logic:
-     * 1. By **priority** (ascending: 1, 2, 3...) - Lower priority rules are evaluated first.
-     * 2. By **DP qualifier value** (descending) - For qualifiers of the same type and priority,
-     * the more restrictive screen (larger DP value, e.g., sw600dp before sw400dp) is evaluated first.
-     *
-     * PT
-     * Adiciona uma nova entrada personalizada e reordena a lista.
-     * A ordenação é crucial para a lógica de resolução:
-     * 1. Pela **prioridade** (ascendente: 1, 2, 3...) - Regras de prioridade mais baixa são avaliadas primeiro.
-     * 2. Pelo **valor do qualificador de DP** (descendente) - Para qualificadores do mesmo tipo e prioridade,
-     * a tela mais restritiva (maior valor de DP, ex: sw600dp antes de sw400dp) é avaliada primeiro.
-     *
-     * @param newEntry The new entry to be added.
-     * @return The new list of sorted entries.
-     */
-    private fun reorderEntries(newEntry: CustomSpEntry): List<CustomSpEntry> {
-        return (sortedCustomEntries + newEntry).sortedWith(
-            compareBy<CustomSpEntry> { it.priority }
-                .thenByDescending { it.dpQualifierEntry?.value ?: 0 }
-        )
-    }
-
-    // EN Functions for defining scaling rules.
-    // PT Funções para definir regras de escalonamento.
-
-    /**
-     * EN
-     * Priority 1: Most specific qualifier - Combines UiModeType AND Dp Qualifier (sw, h, w).
-     *
-     * PT
-     * Prioridade 1: Qualificador mais específico - Combina UiModeType E Qualificador de Dp (sw, h, w).
-     */
-    fun screen(
-        uiModeType: UiModeType,
-        qualifierType: DpQualifier,
-        qualifierValue: Int,
-        orientation: Orientation? = Orientation.DEFAULT,
-        customValue: TextUnit,
-        finalQualifierResolver: DpQualifier? = null,
-        fontScale: Boolean? = true,
-        inverter: Inverter? = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSpEntry(
-            uiModeType = uiModeType,
-            dpQualifierEntry = DpQualifierEntry(qualifierType, qualifierValue),
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 1,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 1: Most specific qualifier - Combines UiModeType AND Dp Qualifier (sw, h, w).
-     * This is an overload that accepts an Int for `customValue`.
-     *
-     * PT
-     * Prioridade 1: Qualificador mais específico - Combina UiModeType E Qualificador de Dp (sw, h, w).
-     * Esta é uma sobrecarga que aceita um Int para `customValue`.
-     */
-    fun screen(
-        uiModeType: UiModeType,
-        qualifierType: DpQualifier,
-        qualifierValue: Int,
-        customValue: Int,
-        finalQualifierResolver: DpQualifier? = null,
-        orientation: Orientation? = Orientation.DEFAULT,
-        fontScale: Boolean? = true,
-        inverter: Inverter? = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSpEntry(
-            uiModeType = uiModeType,
-            dpQualifierEntry = DpQualifierEntry(qualifierType, qualifierValue),
-            orientation = orientation,
-            customValue = customValue.sp,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 1,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 2: UiModeType qualifier (e.g., TELEVISION, WATCH).
-     *
-     * PT
-     * Prioridade 2: Qualificador de UiModeType (e.g., TELEVISION, WATCH).
-     */
-    fun screen(type: UiModeType,
-               customValue: TextUnit,
-               finalQualifierResolver: DpQualifier? = null,
-               orientation: Orientation? = Orientation.DEFAULT,
-               fontScale: Boolean? = true,
-               inverter: Inverter? = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSpEntry(
-            uiModeType = type,
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 2,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 2: UiModeType qualifier (e.g., TELEVISION, WATCH).
-     * This is an overload that accepts an Int for `customValue`.
-     *
-     * PT
-     * Prioridade 2: Qualificador de UiModeType (e.g., TELEVISION, WATCH).
-     * Esta é uma sobrecarga que aceita um Int para `customValue`.
-     */
-    fun screen(type: UiModeType,
-               customValue: Int,
-               finalQualifierResolver: DpQualifier? = null,
-               orientation: Orientation? = Orientation.DEFAULT,
-               fontScale: Boolean? = true,
-               inverter: Inverter? = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSpEntry(
-            uiModeType = type,
-            orientation = orientation,
-            customValue = customValue.sp,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 2,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 3: Dp qualifier (sw, h, w) without UiModeType restriction.
-     *
-     * PT
-     * Prioridade 3: Qualificador de Dp (sw, h, w) sem restrição de UiModeType.
-     */
-    fun screen(type: DpQualifier,
-               value: Int,
-               customValue: TextUnit,
-               finalQualifierResolver: DpQualifier? = null,
-               orientation: Orientation? = Orientation.DEFAULT,
-               fontScale: Boolean? = true,
-               inverter: Inverter? = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSpEntry(
-            dpQualifierEntry = DpQualifierEntry(type, value),
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 3,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 3: Dp qualifier (sw, h, w) without UiModeType restriction.
-     * This is an overload that accepts an Int for `customValue`.
-     *
-     * PT
-     * Prioridade 3: Qualificador de Dp (sw, h, w) sem restrição de UiModeType.
-     * Esta é uma sobrecarga que aceita um Int para `customValue`.
-     */
-    fun screen(type: DpQualifier,
-               value: Int,
-               customValue: Int,
-               finalQualifierResolver: DpQualifier? = null,
-               orientation: Orientation? = Orientation.DEFAULT,
-               fontScale: Boolean? = true,
-               inverter: Inverter? = Inverter.DEFAULT): Scaled {
-        val entry = CustomSpEntry(
-            dpQualifierEntry = DpQualifierEntry(type, value),
-            orientation = orientation,
-            customValue = customValue.sp,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 3,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 4: Orientation.
-     * This is an overload that accepts an Int for `customValue`.
-     *
-     * PT
-     * Prioridade 4: Orientation.
-     * Esta é uma sobrecarga que aceita um Int para `customValue`.
-     */
-    fun screen(orientation: Orientation = Orientation.DEFAULT,
-               customValue: TextUnit,
-               finalQualifierResolver: DpQualifier? = null,
-               fontScale: Boolean? = true,
-               inverter: Inverter? = Inverter.DEFAULT): Scaled {
-        val entry = CustomSpEntry(
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 4,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    /**
-     * EN
-     * Priority 4: Orientation.
-     * This is an overload that accepts an Int for `customValue`.
-     *
-     * PT
-     * Prioridade 4: Orientation.
-     * Esta é uma sobrecarga que aceita um Int para `customValue`.
-     */
-    fun screen(orientation: Orientation = Orientation.DEFAULT,
-               customValue: Int,
-               finalQualifierResolver: DpQualifier? = null,
-               fontScale: Boolean? = true,
-               inverter: Inverter? = Inverter.DEFAULT): Scaled {
-        val entry = CustomSpEntry(
-            orientation = orientation,
-            customValue = customValue.sp,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 4,
-            inverter = inverter
-        )
-        return Scaled(initialBaseSp, reorderEntries(entry))
-    }
-
-    // EN Resolution logic.
-    // PT Lógica de resolução.
-
-    /**
-     * EN
-     * Resolves the final dimension. This is the Composable part that reads the current configuration
-     * and decides which [TextUnit] to use.
-     *
-     * PT
-     * Resolve a dimensão final. Esta é a parte Composable que lê a configuração atual
-     * e decide qual [TextUnit] usar.
-     *
-     * @param qualifier The dynamic scaling qualifier to be applied at the end
-     * (SMALL_WIDTH, HEIGHT, or WIDTH), determined by the accessor property (.ssp, .hsp, .wsp).
-     * @param fontScale Whether to respect the user's font scaling settings.
-     */
-    @SuppressLint("ConfigurationScreenWidthHeight") // EN Annotation is necessary as we access screen metrics. / PT A anotação é necessária, pois acessamos métricas da tela.
-    @Composable
-    private fun resolve(qualifier: DpQualifier, fontScale: Boolean): TextUnit {
-        val context = LocalContext.current
-        val configuration = LocalConfiguration.current
-
-        // EN Extract FoldingFeature dynamically if context is an Activity
-        // PT Extrai o FoldingFeature dinamicamente se o contexto for uma Activity
-        val activity = context.findActivity()
-        val windowLayoutInfo = remember(activity) {
-            activity?.let {
-                WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it)
-            }
-        }?.collectAsState(initial = null)
-        
-        val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-            ?.filterIsInstance<FoldingFeature>()
-            ?.firstOrNull()
-
-        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
-
-        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
-        // EN Tries to find the first custom entry that qualifies.
-        // The list is checked in the priority order defined in [reorderEntries].
-        // PT Tenta encontrar a primeira entrada customizada que se qualifica.
-        // A lista é verificada na ordem de prioridade definida em [reorderEntries].
-        val foundEntry = sortedCustomEntries.firstOrNull { entry ->
-            val qualifierEntry = entry.dpQualifierEntry
-            val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
-
-            // EN Checks if the entry orientation matches the actual screen orientation
-            // PT Verifica se a orientação da entrada bate com a orientação atual da tela
-            val orientationMatch = when (entry.orientation) {
-                Orientation.LANDSCAPE -> isLandscape
-                Orientation.PORTRAIT -> isPortrait
-                else -> true
-            }
-
-            if (qualifierEntry != null) {
-                // EN Checks if the screen value is GREATER THAN OR EQUAL to the qualifier value.
-                // PT Verifica se o valor da tela é MAIOR OU IGUAL ao valor do qualificador.
-                val qualifierMatch = getQualifierValue(
-                    qualifierEntry.type,
-                    configuration
-                ) >= qualifierEntry.value
-
-                // EN Priority 1: Must match [uiModeMatch] AND [qualifierMatch] AND orientationMatch.
-                // PT Prioridade 1: Deve casar [uiModeMatch] E [qualifierMatch] E orientationMatch.
-                if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
-
-                // EN Priority 3: Must match only [qualifierMatch] AND orientationMatch.
-                // PT Prioridade 3: Deve casar apenas [qualifierMatch] E orientationMatch.
-                if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
-
-                return@firstOrNull false // EN Did not match P1 or P3. / PT Não casou com P1 ou P3.
-            } else {
-                // EN Priority 2: Must match only [uiModeMatch] AND orientationMatch (without DP qualifier).
-                // PT Prioridade 2: Deve casar apenas [uiModeMatch] E orientationMatch (sem qualificador de Dp).
-                if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
-
-                // EN Priority 4: Must match only orientationMatch (without DP qualifier).
-                // PT Prioridade 4: Deve casar apenas orientationMatch (sem qualificador de Dp).
-                if (entry.priority == 4 && orientationMatch) return@firstOrNull true
-
-                return@firstOrNull false // EN Did not match P2 or P4.
-            }
-        }
-
-        // EN Determines the TextUnit value to use: custom or the initial base.
-        // PT Determina o valor de TextUnit a ser usado: customizado ou o base inicial.
-        val spToUse: TextUnit = foundEntry?.customValue ?: initialBaseSp
-
-        val finalQualifier = foundEntry?.finalQualifierResolver ?: qualifier
-        val finalFontScale = foundEntry?.fontScale ?: fontScale
-
-        // EN Applies dynamic scaling to the base/custom value.
-        // PT Aplica o dimensionamento dinâmico ao valor base/customizado.
-        val baseIntSp = spToUse.value.toInt()
-        return baseIntSp.toDynamicScaledSp(finalQualifier, finalFontScale, foundEntry?.inverter ?: Inverter.DEFAULT)
-    }
-
-    /**
-     * EN
-     * The final [TextUnit] value that is resolved in Compose.
-     *
-     * PT
-     * O valor final [TextUnit] que é resolvido no Compose.
-     */
-    @get:Composable
-    val ssp: TextUnit get() = resolve(DpQualifier.SMALL_WIDTH, true)
-
-    /**
-     * EN
-     * The final [TextUnit] value that is resolved in Compose.
-     *
-     * PT
-     * O valor final [TextUnit] que é resolvido no Compose.
-     */
-    @get:Composable
-    val hsp: TextUnit get() = resolve(DpQualifier.HEIGHT, true)
-
-    /**
-     * EN
-     * The final [TextUnit] value that is resolved in Compose.
-     *
-     * PT
-     * O valor final [TextUnit] que é resolvido no Compose.
-     */
-    @get:Composable
-    val wsp: TextUnit get() = resolve(DpQualifier.WIDTH, true)
-
-    /**
-     * EN
-     * The final [TextUnit] value that is resolved in Compose.
-     *
-     * PT
-     * O valor final [TextUnit] que é resolvido no Compose.
-     */
-    @get:Composable
-    val sem: TextUnit get() = resolve(DpQualifier.SMALL_WIDTH, false)
-
-    /**
-     * EN
-     * The final [TextUnit] value that is resolved in Compose.
-     *
-     * PT
-     * O valor final [TextUnit] que é resolvido no Compose.
-     */
-    @get:Composable
-    val hem: TextUnit get() = resolve(DpQualifier.HEIGHT, false)
-
-    /**
-     * EN
-     * The final [TextUnit] value that is resolved in Compose.
-     *
-     * PT
-     * O valor final [TextUnit] que é resolvido no Compose.
-     */
-    @get:Composable
-    val wem: TextUnit get() = resolve(DpQualifier.WIDTH, false)
-}
-
-// EN Support functions for resource resolution.
-// PT Funções de suporte para resolução de recursos.
+@get:Composable
+val Int.hem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale = false)
 
 /**
  * EN
- * Finds the resource ID of a dimension by its name in the current package.
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Height (hDP)** (WITHOUT FONT SCALE), but
+ * in landscape orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.hemLw`.
  *
  * PT
- * Encontra o ID de recurso de uma dimensão pelo seu nome no pacote atual.
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) baseado na Altura, mas na paisagem atua como Largura.
+ * Exemplo de uso: `32.hemLw`.
+ */
+@get:Composable
+val Int.hemLw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale = false, inverter = Inverter.PH_TO_LW)
+
+/**
+ * EN
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Height (hDP)** (WITHOUT FONT SCALE), but
+ * in portrait orientation it acts as **Screen Width (wDP)**.
+ * Usage example: `32.hemPw`.
  *
- * @param resourceName The name of the resource (e.g., "_16sdp").
- * @return The dimension resource ID, or 0/-1 if not found.
+ * PT
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) baseado na Altura, mas no retrato atua como Largura.
+ * Exemplo de uso: `32.hemPw`.
+ */
+@get:Composable
+val Int.hemPw: TextUnit get() = this.toDynamicScaledSp(DpQualifier.HEIGHT, fontScale = false, inverter = Inverter.LH_TO_PW)
+
+/**
+ * EN
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Width (wDP)** (WITHOUT FONT SCALE).
+ * Usage example: `100.wem`.
+ *
+ * PT
+ * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** (SEM ESCALA DE FONTE).
+ * Exemplo de uso: `100.wem`.
+ */
+@get:Composable
+val Int.wem: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale = false)
+
+/**
+ * EN
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Width (wDP)** (WITHOUT FONT SCALE), but
+ * in landscape orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `100.wemLh`.
+ *
+ * PT
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) baseado na Largura, mas na paisagem atua como Altura.
+ * Exemplo de uso: `100.wemLh`.
+ */
+@get:Composable
+val Int.wemLh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale = false, inverter = Inverter.PW_TO_LH)
+
+/**
+ * EN
+ * Extension for TextUnit (Sp) with dynamic scaling based on the **Screen Width (wDP)** (WITHOUT FONT SCALE), but
+ * in portrait orientation it acts as **Screen Height (hDP)**.
+ * Usage example: `100.wemPh`.
+ *
+ * PT
+ * Extensão para TextUnit (Sp) (SEM ESCALA DE FONTE) baseado na Largura, mas no retrato atua como Altura.
+ * Exemplo de uso: `100.wemPh`.
+ */
+@get:Composable
+val Int.wemPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontScale = false, inverter = Inverter.LW_TO_PH)
+
+// EN Dynamic scaling function for Sp (Resource-based, reuses DP XML resources).
+// PT Função de dimensionamento dinâmico para Sp (baseada em recursos, reutiliza os recursos XML de DP).
+
+/**
+ * EN
+ * Converts an Int (the base Sp value) into a dynamically scaled TextUnit (Sp).
+ * This function reuses the existing DP XML resources (`_Nsdp`, `_Nhdp`, `_Nwdp`) as the
+ * dimension values, then converts them to Sp. This means the scaling system is the same as
+ * the DP system — the raw dp value from the resource is used directly as an sp number.
+ *
+ * 1. Constructs the resource name based on the value and the qualifier (e.g., `_16sdp`).
+ * 2. Loads the dimension value in dp from that resource.
+ * 3. Converts it to Sp, optionally stripping the system font scale.
+ *
+ * PT
+ * Converte um Int (o valor Sp base) em um TextUnit (Sp) escalado dinamicamente.
+ * Esta função reutiliza os recursos XML de DP existentes (`_Nsdp`, `_Nhdp`, `_Nwdp`) como
+ * valores de dimensão, convertendo-os para Sp. O sistema de escalonamento é o mesmo do DP —
+ * o valor dp bruto do recurso é usado diretamente como número sp.
+ *
+ * 1. Constrói o nome do recurso baseado no valor e no qualificador (ex: `_16sdp`).
+ * 2. Carrega o valor de dimensão em dp daquele recurso.
+ * 3. Converte para Sp, opcionalmente removendo a escala de fonte do sistema.
+ *
+ * @param qualifier The screen qualifier used to determine the resource name (sdp, hdp, wdp).
+ * @param fontScale Whether to respect the user's font scale setting.
+ * @param inverter Inverter to swap qualifier when orientation changes.
+ * @return The TextUnit (Sp) value loaded from the resource, or the base sp value as fallback.
  */
 @SuppressLint("LocalContextResourcesRead", "DiscouragedApi")
 @Composable
-private fun findResourceIdByName(resourceName: String): Int {
-    val context = LocalContext.current
-    return context.resources.getIdentifier(
-        resourceName,
-        "dimen", // EN Type of resource we are looking for (dimension). / PT Tipo de recurso que estamos procurando (dimensão).
-        context.packageName
-    )
-}
-
-/**
- * EN
- * The main logic for applying dynamic scaling.
- * Tries to find a pre-calculated dimension resource (e.g., `_16sdp`)
- * and uses it to get a scaled Sp value.
- *
- * PT
- * A lógica principal para aplicar o escalonamento dinâmico.
- * Tenta encontrar um recurso de dimensão pré-calculado (ex: `_16sdp`)
- * e o usa para obter um valor Sp escalado.
- *
- * @receiver The base Sp value (e.g., 16 for 16sp).
- * @param qualifier The qualifier used to determine the resource name (s, h, w).
- * @param fontScale A boolean that indicates if the font scale is enabled or not
- * @return The dynamically scaled TextUnit (Sp), or the base value if the resource is not found.
- */
-@Composable
-fun Int.toDynamicScaledSp(qualifier: DpQualifier, fontScale: Boolean, inverter: Inverter = Inverter.DEFAULT): TextUnit {
-    // EN Ensures that the value is within a reasonable range for dimension generation.
-    // PT Garante que o valor está dentro de uma faixa razoável para a geração de dimensões.
-    require(this in 1..600) { "Value must be between 1 and 600 to use the dynamic scaling dimension logic. Current value:: $this" }
+fun Int.toDynamicScaledSp(
+    qualifier: DpQualifier,
+    fontScale: Boolean,
+    inverter: Inverter = Inverter.DEFAULT
+): TextUnit {
+    require(this in 1..600) {
+        "Value must be between 1 and 600 to use the dynamic scaling dimension logic. Current value: $this"
+    }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -827,32 +389,69 @@ fun Int.toDynamicScaledSp(qualifier: DpQualifier, fontScale: Boolean, inverter: 
         Inverter.PW_TO_LH -> if (isLandscape && qualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
         Inverter.LH_TO_PW -> if (isPortrait && qualifier == DpQualifier.HEIGHT) actualQualifier = DpQualifier.WIDTH
         Inverter.LW_TO_PH -> if (isPortrait && qualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
+        Inverter.SW_TO_LH -> if (isLandscape && qualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.HEIGHT
+        Inverter.SW_TO_LW -> if (isLandscape && qualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.WIDTH
+        Inverter.SW_TO_PH -> if (isPortrait && qualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.HEIGHT
+        Inverter.SW_TO_PW -> if (isPortrait && qualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.WIDTH
         Inverter.DEFAULT -> {}
     }
 
-    val attrName = when (actualQualifier) {
-        DpQualifier.HEIGHT -> "h" // EN Resource based on height: e.g., _16hsp / PT Recurso com base na altura: ex: _16hsp
-        DpQualifier.WIDTH -> "w"  // EN Resource based on width: e.g., _16wsp / PT Recurso com base na largura: ex: _16wsp
-        else -> "s"               // EN Default (Smallest Width): e.g., _16ssp / PT Padrão (Smallest Width): ex: _16ssp
+    // EN Reuses the existing DP XML resource naming convention: _Nsdp, _Nhdp, _Nwdp.
+    // PT Reutiliza a convenção de nomenclatura dos recursos XML de DP: _Nsdp, _Nhdp, _Nwdp.
+    val suffix = when (actualQualifier) {
+        DpQualifier.HEIGHT -> "hsp"
+        DpQualifier.WIDTH -> "wsp"
+        else -> "ssp"
     }
 
-    // EN Handles negative values, using the "minus" prefix in the naming convention (SSP only supports positive values, but the logic is there).
-    // PT Lida com valores negativos, usando o prefixo "minus" na convenção de nome (SSP só suporta valores positivos, mas a lógica está aí).
-    val prefix = if (this < 0) "minus" else ""
-    // EN Constructs the expected resource name, e.g., "_16ssp", "_minuss16sp", "_w100sp".
-    // PT Constrói o nome do recurso esperado, ex: "_16ssp", "_minuss16sp", "_w100sp".
-    val resourceName = "_${prefix}${abs(this)}${attrName}sp"
-    val dimenResourceId = findResourceIdByName(resourceName)
+    val resourceName = "_${abs(this)}$suffix"
+    val dimenResourceId = findResourceIdByNameSsp(resourceName)
 
-    // EN If the resource is found, loads it and converts to Sp.
-    // PT Se o recurso for encontrado, carrega-o e converte para Sp.
-    return if (dimenResourceId != 0 && dimenResourceId != -1)
-    // EN dimensionResource returns the value in Dp, which is converted to Sp. / PT dimensionResource retorna o valor em Dp, que é convertido para Sp.
-        if (fontScale) dimensionResource(id = dimenResourceId).value.sp
-        else (dimensionResource(id = dimenResourceId).value / LocalDensity.current.fontScale).sp
-    // EN Otherwise, returns the unscaled Sp value (Compose default).
-    // PT Caso contrário, retorna o valor Sp não escalado (padrão do Compose).
-    else
+    // EN If the resource is found, loads the dp value and treats it as sp.
+    // PT Se o recurso for encontrado, carrega o valor dp e o trata como sp.
+    return if (dimenResourceId != 0 && dimenResourceId != -1) {
+        val dpValue = dimensionResource(id = dimenResourceId).value
+        if (fontScale) dpValue.sp
+        else (dpValue / LocalDensity.current.fontScale).sp
+    } else {
+        // EN Fallback: returns the base sp value (no scaling).
+        // PT Fallback: retorna o valor sp base (sem escalonamento).
         if (fontScale) this.sp
-        else (this.sp.value / LocalDensity.current.fontScale).sp
+        else (this.toFloat() / LocalDensity.current.fontScale).sp
+    }
+}
+
+/**
+ * EN
+ * Returns the DP configuration value (as a float) for a specific DpQualifier.
+ *
+ * PT
+ * Retorna o valor de configuração de DP (em float) para um DpQualifier específico.
+ *
+ * @param qualifier The type of qualifier (SMALL_WIDTH, HEIGHT, WIDTH).
+ * @param configuration The current resource configuration.
+ * @return The corresponding DP value in the configuration.
+ */
+internal fun getQualifierValue(qualifier: DpQualifier, configuration: Configuration): Float {
+    return when (qualifier) {
+        DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+        DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+        DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
+    }
+}
+
+/**
+ * EN
+ * Finds the dimension resource ID (`dimen`) by name.
+ * Private to this file to avoid conflicts with the DP equivalent in DimenSdp.kt.
+ *
+ * PT
+ * Encontra o ID de recurso de dimensão (`dimen`) pelo nome.
+ * Privado neste arquivo para evitar conflitos com o equivalente DP em DimenSdp.kt.
+ */
+@SuppressLint("LocalContextResourcesRead", "DiscouragedApi")
+@Composable
+private fun findResourceIdByNameSsp(resourceName: String): Int {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    return context.resources.getIdentifier(resourceName, "dimen", context.packageName)
 }

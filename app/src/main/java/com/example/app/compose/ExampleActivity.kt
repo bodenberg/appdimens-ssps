@@ -24,10 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.UiModeType
-import com.appdimens.ssps.compose.hsp
-import com.appdimens.ssps.compose.scaledSp
-import com.appdimens.ssps.compose.ssp
-import com.appdimens.ssps.compose.wsp
+import com.appdimens.ssps.compose.*
 
 /**
  * [EN] Example Activity to demonstrate the full usage
@@ -121,8 +118,62 @@ fun AppDimensSspExampleScreen() {
 
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
-        // [EN] SECTION 2 — Conditional Scaling (Scaled)
-        // [PT] SEÇÃO 2 — Escala Condicional (Escalada)
+        // [EN] SECTION 2 — Inverter Shortcuts
+        // [PT] SEÇÃO 2 — Atalhos com Inversão
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        item {
+            DemoCard(
+                title = "Inverter Shortcuts",
+                icon = Icons.Default.FormatSize,
+                description = "Quick shortcuts to resolve dimensions based on orientation swaps (e.g., sspPh uses Height in Portrait)."
+            ) {
+                Text("16.sspPh → ${16.sspPh.value}sp", fontSize = 16.sspPh)
+                Text("16.sspLw → ${16.sspLw.value}sp", fontSize = 16.sspLw)
+                Text("18.hspLw → ${18.hspLw.value}sp", fontSize = 18.hspLw)
+            }
+        }
+
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        // [EN] SECTION 3 — No Font Scale (sem, hem, wem)
+        // [PT] SEÇÃO 3 — Sem Escala de Fonte (sem, hem, wem)
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        item {
+            DemoCard(
+                title = "No Font Scale (sem)",
+                icon = Icons.Default.FormatSize,
+                description = "Dimensions that ignore the system font scale setting."
+            ) {
+                Text("16.sem → Ignore font scale (sw)", fontSize = 16.sem)
+                Text("16.hem → Ignore font scale (h)", fontSize = 16.hem)
+                Text("16.wem → Ignore font scale (w)", fontSize = 16.wem)
+            }
+        }
+
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        // [EN] SECTION 4 — Facilitators (Rotate, Mode, Qualifier)
+        // [PT] SEÇÃO 4 — Facilitadores (Rotação, Modo, Qualificador)
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        item {
+            DemoCard(
+                title = "Facilitators",
+                icon = Icons.Default.DisplaySettings,
+                description = "Easy to use functions for common conditional scaling scenarios."
+            ) {
+                Text("Rotate: 16.sspRotate(24) (24 in Landscape)", fontSize = 16.sspRotate(24))
+                Text("Mode: 16.sspMode(30, UiModeType.TELEVISION)", fontSize = 16.sspMode(30, UiModeType.TELEVISION))
+                Text("Qualifier: 16.sspQualifier(20, DpQualifier.SMALL_WIDTH, 600)", fontSize = 16.sspQualifier(20, DpQualifier.SMALL_WIDTH, 600))
+            }
+        }
+
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        // [EN] SECTION 5 — Conditional Scaling (ScaledSp)
+        // [PT] SEÇÃO 5 — Escala Condicional (ScaledSp)
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
         item {
@@ -134,7 +185,7 @@ fun AppDimensSspExampleScreen() {
                 .screen(DpQualifier.WIDTH, 400, 18)
 
             DemoCard(
-                title = "Conditional Scaling (Scaled)",
+                title = "Conditional Scaling (ScaledSp)",
                 icon = Icons.Default.DisplaySettings,
                 description = "Define custom rules based on UI mode (TV, Car, etc.) " +
                         "and screen qualifiers (width, height, or smallest width)."
@@ -249,7 +300,7 @@ fun DemoCard(
  *
  * [PT] Uma visualização para a tela de exemplo do AppDimens SSP.
  */
-@Preview(showBackground = true, device = "spec:width=673dp,height=841dp")
+@Preview(showBackground = true, device = "id:Nexus One")
 @Composable
 fun PreviewAppDimensSspExample() {
     MaterialTheme(colorScheme = lightColorScheme()) {

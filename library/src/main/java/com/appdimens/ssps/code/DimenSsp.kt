@@ -1,13 +1,13 @@
 /**
  * Author & Developer: Jean Bodenberg
- * GIT: https://github.com/bodenberg/appdimens.git
+ * GIT: https://github.com/bodenberg/appdimens-ssps.git
  * Date: 2025-10-04
  *
  * Library: AppDimens
  *
  * Description:
  * The AppDimens library is a dimension management system that automatically
- * adjusts Sp, Sp, and Px values in a responsive and mathematically refined way,
+ * adjusts Dp, Sp, and Px values in a responsive and mathematically refined way,
  * ensuring layout consistency across any screen size or ratio.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,69 +27,98 @@ package com.appdimens.ssps.code
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.util.TypedValue
 import com.appdimens.ssps.common.DpQualifier
-import com.appdimens.ssps.common.DpQualifierEntry
 import com.appdimens.ssps.common.Inverter
 import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
+import kotlin.math.abs
 
 /**
  * EN
- * Utility object for handling SSP (Scalable Sp) dimensions.
+ * Utility object for handling SSP (Scalable Sp) dimensions from code (non-Compose).
+ * Reuses the existing XML DP resources (`_Nsdp`, `_Nhdp`, `_Nwdp`) and converts
+ * the resulting Dp value to a Sp (pixels) value, respecting or ignoring the system font scale.
  *
  * PT
- * Objeto utilitário para manipulação de dimensões SSP (Scalable Sp).
+ * Objeto utilitário para manipulação de dimensões SSP (Sp escalável) a partir de código (não-Compose).
+ * Reutiliza os recursos XML de DP existentes (`_Nsdp`, `_Nhdp`, `_Nwdp`) e converte
+ * o valor Dp resultante para um valor Sp (pixels), respeitando ou ignorando a escala de fonte.
  */
 object DimenSsp {
-    private const val MIN_VALUE =
-        1 // EN Minimum allowed SSP value. / PT Valor mínimo permitido para SSP.
-    private const val MAX_VALUE =
-        600 // EN Maximum allowed SSP value. / PT Valor máximo permitido para SSP.
-    private const val DIMEN_TYPE =
-        "dimen" // EN The resource type for dimensions. / PT O tipo de recurso para dimensões.
+    private const val MIN_VALUE = 1
+    private const val MAX_VALUE = 600
+    private const val DIMEN_TYPE = "dimen"
 
     /**
      * EN
-     * Gets the dimension in pixels from an SSP value.
+     * Gets the dimension in pixels (Sp) from an SSP value.
+     * Reads the DP XML resource and converts it to Sp pixels.
      *
      * PT
-     * Obtém a dimensão em pixels a partir de um valor SSP.
+     * Obtém a dimensão em pixels (Sp) a partir de um valor SSP.
+     * Lê o recurso XML de DP e converte para pixels Sp.
      *
      * @param context The application context.
-     * @param dpQualifier DpQualifier.
+     * @param dpQualifier DpQualifier (SMALL_WIDTH, HEIGHT, WIDTH).
      * @param value The SSP value (1 to 600).
-     * @param fontScale A boolean that indicates if the font scale is enabled or not
-     * @param inverter The inverter type to dynamically adapt scaling (default is Inverter.DEFAULT).
-     * @return The dimension in pixels, or 0f if not found.
+     * @param inverter The inverter type (default is Inverter.DEFAULT).
+     * @param fontScale Whether to include the system font scale. Default true.
+     * @return The dimension in pixels (Sp), or 0f if not found.
      */
     @JvmStatic
     @JvmOverloads
-    fun getDimensionInPx(context: Context, dpQualifier: DpQualifier, value: Int, fontScale: Boolean = true, inverter: Inverter = Inverter.DEFAULT): Float {
+    fun getDimensionInSpPx(
+        context: Context,
+        dpQualifier: DpQualifier,
+        value: Int,
+        inverter: Inverter = Inverter.DEFAULT,
+        fontScale: Boolean = true
+    ): Float {
         if (value == 0) return 0f
+        require(value in MIN_VALUE..MAX_VALUE) {
+            "Value must be between $MIN_VALUE and $MAX_VALUE. Current value: $value"
+        }
         val resourceId = getResourceId(context, dpQualifier, value, inverter)
-        return if (resourceId != 0) {
-            if (fontScale) context.resources.getDimension(resourceId)
-            else context.resources.getDimension(resourceId) / context.resources.configuration.fontScale
-        } else 0f
+        if (resourceId == 0) return 0f
+
+        // EN Gets the raw dp value from the resource and converts to sp pixels.
+        // PT Obtém o valor dp bruto do recurso e converte para pixels sp.
+        val dpValue = context.resources.getDimension(resourceId) / context.resources.displayMetrics.density
+        val metrics = context.resources.displayMetrics
+        return if (fontScale) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, dpValue, metrics)
+        } else {
+            // EN Bypasses font scale by using complexUnitDip since 1dp = (density/fontScale) sp display pixels.
+            // PT Ignora a escala de fonte usando a densidade diretamente.
+            dpValue * metrics.density
+        }
     }
 
     /**
      * EN
-     * Gets the resource ID for an SSP value.
+     * Gets the resource ID for an SSP value (delegates to DP resource naming).
+     * The SP system reuses the same DP XML resources.
      *
      * PT
-     * Obtém o ID do recurso para um valor SSP.
+     * Obtém o ID do recurso para um valor SSP (delega para a nomenclatura do recurso DP).
+     * O sistema SP reutiliza os mesmos recursos XML de DP.
      *
      * @param context The application context.
      * @param dpQualifier DpQualifier.
      * @param value The SSP value (1 to 600).
-     * @param inverter The inverter type to dynamically adapt scaling (default is Inverter.DEFAULT).
+     * @param inverter The inverter type (default is Inverter.DEFAULT).
      * @return The resource ID, or 0 if not found.
      */
     @JvmStatic
     @JvmOverloads
     @SuppressLint("DiscouragedApi")
-    fun getResourceId(context: Context, dpQualifier: DpQualifier, value: Int, inverter: Inverter = Inverter.DEFAULT): Int {
+    fun getResourceId(
+        context: Context,
+        dpQualifier: DpQualifier,
+        value: Int,
+        inverter: Inverter = Inverter.DEFAULT
+    ): Int {
         if (value == 0) return 0
 
         val configuration = context.resources.configuration
@@ -103,554 +132,548 @@ object DimenSsp {
             Inverter.PW_TO_LH -> if (isLandscape && dpQualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
             Inverter.LH_TO_PW -> if (isPortrait && dpQualifier == DpQualifier.HEIGHT) actualQualifier = DpQualifier.WIDTH
             Inverter.LW_TO_PH -> if (isPortrait && dpQualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
+            Inverter.SW_TO_LH -> if (isLandscape && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.HEIGHT
+            Inverter.SW_TO_LW -> if (isLandscape && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.WIDTH
+            Inverter.SW_TO_PH -> if (isPortrait && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.HEIGHT
+            Inverter.SW_TO_PW -> if (isPortrait && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.WIDTH
             Inverter.DEFAULT -> {}
         }
 
         val safeValue = value.coerceIn(MIN_VALUE, MAX_VALUE)
-        val sspSuffix = when (actualQualifier) {
+        // EN Reuses DP resource naming convention: _Nsdp, _Nhdp, _Nwdp.
+        // PT Reutiliza convenção de nomenclatura DP: _Nsdp, _Nhdp, _Nwdp.
+        val suffix = when (actualQualifier) {
             DpQualifier.SMALL_WIDTH -> "ssp"
             DpQualifier.HEIGHT -> "hsp"
             DpQualifier.WIDTH -> "wsp"
         }
-        val dimenName = buildResourceName(safeValue, sspSuffix)
-
+        val dimenName = "_${abs(safeValue)}$suffix"
         return context.resources.getIdentifier(dimenName, DIMEN_TYPE, context.packageName)
     }
 
-    // EN Extensions style functions similar to the compose equivalents for quick resolution.
-    // PT Funções estilo extensão similares aos equivalentes do compose para resolução rápida.
+    // EN Quick-resolution methods.
+    // PT Métodos de resolução rápida.
 
     /**
-     * EN
-     * Quick resolution for Smallest Width (ssp).
-     * Usage example: `DimenSsp.ssp(context, 16)`.
-     *
-     * PT
-     * Resolução rápida para Smallest Width (ssp).
-     * Exemplo de uso: `DimenSsp.ssp(context, 16)`.
+     * EN Quick resolution for Smallest Width (ssp). Usage: `DimenSsp.ssp(context, 16)`.
+     * PT Resolução rápida para Smallest Width (ssp). Uso: `DimenSsp.ssp(context, 16)`.
      */
     @JvmStatic
-    @JvmOverloads
-    fun ssp(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.SMALL_WIDTH, value, fontScale)
+    fun ssp(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value)
 
     /**
-     * EN
-     * Quick resolution for Screen Height (hsp).
-     * Usage example: `DimenSsp.hsp(context, 32)`.
-     *
-     * PT
-     * Resolução rápida para Altura da Tela (hsp).
-     * Exemplo de uso: `DimenSsp.hsp(context, 32)`.
+     * EN Quick resolution for ssp, portrait → Height.
+     * PT Resolução rápida para ssp, retrato → Altura.
      */
     @JvmStatic
-    @JvmOverloads
-    fun hsp(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.HEIGHT, value, fontScale)
+    fun sspPh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PH)
 
     /**
-     * EN
-     * Quick resolution for Screen Height (hsp), but
-     * in landscape orientation it acts as Screen Width (wsp).
-     * Usage example: `DimenSsp.hsp_lw(context, 32)`.
-     *
-     * PT
-     * Resolução rápida para Altura da Tela (hsp), mas
-     * na orientação paisagem atua como Largura da Tela (wsp).
-     * Exemplo de uso: `DimenSsp.hsp_lw(context, 32)`.
+     * EN Quick resolution for ssp, landscape → Height.
+     * PT Resolução rápida para ssp, paisagem → Altura.
      */
     @JvmStatic
-    @JvmOverloads
-    fun hsp_lw(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.HEIGHT, value, fontScale, Inverter.PH_TO_LW)
+    fun sspLh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LH)
 
     /**
-     * EN
-     * Quick resolution for Screen Height (hsp), but
-     * in portrait orientation it acts as Screen Width (wsp).
-     * Usage example: `DimenSsp.hsp_pw(context, 32)`.
-     *
-     * PT
-     * Resolução rápida para Altura da Tela (hsp), mas
-     * na orientação retrato atua como Largura da Tela (wsp).
-     * Exemplo de uso: `DimenSsp.hsp_pw(context, 32)`.
+     * EN Quick resolution for ssp, portrait → Width.
+     * PT Resolução rápida para ssp, retrato → Largura.
      */
     @JvmStatic
-    @JvmOverloads
-    fun hsp_pw(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.HEIGHT, value, fontScale, Inverter.LH_TO_PW)
+    fun sspPw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PW)
 
     /**
-     * EN
-     * Quick resolution for Screen Width (wsp).
-     * Usage example: `DimenSsp.wsp(context, 100)`.
-     *
-     * PT
-     * Resolução rápida para Largura da Tela (wsp).
-     * Exemplo de uso: `DimenSsp.wsp(context, 100)`.
+     * EN Quick resolution for ssp, landscape → Width.
+     * PT Resolução rápida para ssp, paisagem → Largura.
      */
     @JvmStatic
-    @JvmOverloads
-    fun wsp(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.WIDTH, value, fontScale)
+    fun sspLw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LW)
 
     /**
-     * EN
-     * Quick resolution for Screen Width (wsp), but
-     * in landscape orientation it acts as Screen Height (hsp).
-     * Usage example: `DimenSsp.wsp_lh(context, 100)`.
-     *
-     * PT
-     * Resolução rápida para Largura da Tela (wsp), mas
-     * na orientação paisagem atua como Altura da Tela (hsp).
-     * Exemplo de uso: `DimenSsp.wsp_lh(context, 100)`.
+     * EN Quick resolution for Screen Height (hsp). Usage: `DimenSsp.hsp(context, 32)`.
+     * PT Resolução rápida para Altura da Tela (hsp). Uso: `DimenSsp.hsp(context, 32)`.
      */
     @JvmStatic
-    @JvmOverloads
-    fun wsp_lh(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.WIDTH, value, fontScale, Inverter.PW_TO_LH)
+    fun hsp(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value)
 
     /**
-     * EN
-     * Quick resolution for Screen Width (wsp), but
-     * in portrait orientation it acts as Screen Height (hsp).
-     * Usage example: `DimenSsp.wsp_ph(context, 100)`.
-     *
-     * PT
-     * Resolução rápida para Largura da Tela (wsp), mas
-     * na orientação retrato atua como Altura da Tela (hsp).
-     * Exemplo de uso: `DimenSsp.wsp_ph(context, 100)`.
+     * EN Quick resolution for hsp, landscape → Width.
+     * PT Resolução rápida para hsp, paisagem → Largura.
      */
     @JvmStatic
-    @JvmOverloads
-    fun wsp_ph(context: Context, value: Int, fontScale: Boolean = true): Float = getDimensionInPx(context, DpQualifier.WIDTH, value, fontScale, Inverter.LW_TO_PH)
-
-    // EN Resource ID variants of the above extensions.
-    // PT Variantes que retornam o ID de recurso das extensões acima.
+    fun hspLw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.PH_TO_LW)
 
     /**
-     * EN
-     * Quick resolution for Smallest Width resource ID (sspRes).
-     * Usage example: `DimenSsp.sspRes(context, 16)`.
-     *
-     * PT
-     * Resolução rápida para ID de recurso Smallest Width (sspRes).
-     * Exemplo de uso: `DimenSsp.sspRes(context, 16)`.
+     * EN Quick resolution for hsp, portrait → Width.
+     * PT Resolução rápida para hsp, retrato → Largura.
      */
+    @JvmStatic
+    fun hspPw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.LH_TO_PW)
+
+    /**
+     * EN Quick resolution for Screen Width (wsp). Usage: `DimenSsp.wsp(context, 100)`.
+     * PT Resolução rápida para Largura da Tela (wsp). Uso: `DimenSsp.wsp(context, 100)`.
+     */
+    @JvmStatic
+    fun wsp(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value)
+
+    /**
+     * EN Quick resolution for wsp, landscape → Height.
+     * PT Resolução rápida para wsp, paisagem → Altura.
+     */
+    @JvmStatic
+    fun wspLh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.PW_TO_LH)
+
+    /**
+     * EN Quick resolution for wsp, portrait → Height.
+     * PT Resolução rápida para wsp, retrato → Altura.
+     */
+    @JvmStatic
+    fun wspPh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH)
+
+    // EN WITHOUT FONT SCALE variants (sem escala de fonte).
+    // PT Variantes SEM ESCALA DE FONTE.
+
+    /** EN ssp without font scale. PT ssp sem escala de fonte. */
+    @JvmStatic
+    fun sem(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, fontScale = false)
+
+    /** EN ssp without font scale, portrait → Height. PT ssp sem escala de fonte, retrato → Altura. */
+    @JvmStatic
+    fun semPh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PH, fontScale = false)
+
+    /** EN ssp without font scale, landscape → Height. PT ssp sem escala de fonte, paisagem → Altura. */
+    @JvmStatic
+    fun semLh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LH, fontScale = false)
+
+    /** EN ssp without font scale, portrait → Width. PT ssp sem escala de fonte, retrato → Largura. */
+    @JvmStatic
+    fun semPw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PW, fontScale = false)
+
+    /** EN ssp without font scale, landscape → Width. PT ssp sem escala de fonte, paisagem → Largura. */
+    @JvmStatic
+    fun semLw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LW, fontScale = false)
+
+    /** EN hsp without font scale. PT hsp sem escala de fonte. */
+    @JvmStatic
+    fun hem(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, fontScale = false)
+
+    /** EN hsp without font scale, landscape → Width. PT hsp sem escala de fonte, paisagem → Largura. */
+    @JvmStatic
+    fun hemLw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.PH_TO_LW, fontScale = false)
+
+    /** EN hsp without font scale, portrait → Width. PT hsp sem escala de fonte, retrato → Largura. */
+    @JvmStatic
+    fun hemPw(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.LH_TO_PW, fontScale = false)
+
+    /** EN wsp without font scale. PT wsp sem escala de fonte. */
+    @JvmStatic
+    fun wem(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, fontScale = false)
+
+    /** EN wsp without font scale, landscape → Height. PT wsp sem escala de fonte, paisagem → Altura. */
+    @JvmStatic
+    fun wemLh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.PW_TO_LH, fontScale = false)
+
+    /** EN wsp without font scale, portrait → Height. PT wsp sem escala de fonte, retrato → Altura. */
+    @JvmStatic
+    fun wemPh(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH, fontScale = false)
+
+    // EN Resource ID variants.
+    // PT Variantes de ID de recurso.
+
+    /** EN Gets the resources id of ssp. PT Obtém o id de recurso do ssp. */
     @JvmStatic
     fun sspRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.SMALL_WIDTH, value)
 
-    /**
-     * EN
-     * Quick resolution for Screen Height resource ID (hspRes).
-     * Usage example: `DimenSsp.hspRes(context, 32)`.
-     *
-     * PT
-     * Resolução rápida para ID de recurso Altura da Tela (hspRes).
-     * Exemplo de uso: `DimenSsp.hspRes(context, 32)`.
-     */
+    /** EN resource ID variant for ssp portrait to height. PT Id de recurso ssp retrato para altura. */
+    @JvmStatic
+    fun sspPhRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PH)
+
+    /** EN resource ID variant for ssp landscape to height. PT Id de recurso ssp paisagem para altura. */
+    @JvmStatic
+    fun sspLhRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LH)
+
+    /** EN resource ID variant for ssp portrait to width. PT Id de recurso ssp retrato para largura. */
+    @JvmStatic
+    fun sspPwRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PW)
+
+    /** EN resource ID variant for ssp landscape to width. PT Id de recurso ssp paisagem para largura. */
+    @JvmStatic
+    fun sspLwRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LW)
+
+    /** EN resource ID variant for hsp. PT Id de recurso hsp. */
     @JvmStatic
     fun hspRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.HEIGHT, value)
 
-    /**
-     * EN
-     * Quick resolution for Screen Height resource ID (hspRes), but
-     * in landscape orientation it acts as Screen Width resource ID (wspRes).
-     * Usage example: `DimenSsp.hsp_lwRes(context, 32)`.
-     *
-     * PT
-     * Resolução rápida para ID de recurso Altura da Tela (hspRes), mas
-     * na orientação paisagem atua como Largura da Tela (wspRes).
-     * Exemplo de uso: `DimenSsp.hsp_lwRes(context, 32)`.
-     */
+    /** EN resource ID variant for hsp landscape to width. PT Id de recurso hsp paisagem para largura. */
     @JvmStatic
-    fun hsp_lwRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.HEIGHT, value, Inverter.PH_TO_LW)
+    fun hspLwRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.HEIGHT, value, Inverter.PH_TO_LW)
 
-    /**
-     * EN
-     * Quick resolution for Screen Height resource ID (hspRes), but
-     * in portrait orientation it acts as Screen Width resource ID (wspRes).
-     * Usage example: `DimenSsp.hsp_pwRes(context, 32)`.
-     *
-     * PT
-     * Resolução rápida para ID de recurso Altura da Tela (hspRes), mas
-     * na orientação retrato atua como Largura da Tela (wspRes).
-     * Exemplo de uso: `DimenSsp.hsp_pwRes(context, 32)`.
-     */
+    /** EN resource ID variant for hsp portrait to width. PT Id de recurso hsp retrato para largura. */
     @JvmStatic
-    fun hsp_pwRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.HEIGHT, value, Inverter.LH_TO_PW)
+    fun hspPwRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.HEIGHT, value, Inverter.LH_TO_PW)
 
-    /**
-     * EN
-     * Quick resolution for Screen Width resource ID (wspRes).
-     * Usage example: `DimenSsp.wspRes(context, 100)`.
-     *
-     * PT
-     * Resolução rápida para ID de recurso Largura da Tela (wspRes).
-     * Exemplo de uso: `DimenSsp.wspRes(context, 100)`.
-     */
+    /** EN resource ID variant for wsp. PT Id de recurso wsp. */
     @JvmStatic
     fun wspRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.WIDTH, value)
 
+    /** EN resource ID variant for wsp landscape to height. PT Id de recurso wsp paisagem para altura. */
+    @JvmStatic
+    fun wspLhRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.WIDTH, value, Inverter.PW_TO_LH)
+
+    /** EN resource ID variant for wsp portrait to height. PT Id de recurso wsp retrato para altura. */
+    @JvmStatic
+    fun wspPhRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH)
+
     /**
      * EN
-     * Quick resolution for Screen Width resource ID (wspRes), but
-     * in landscape orientation it acts as Screen Height resource ID (hspRes).
-     * Usage example: `DimenSsp.wsp_lhRes(context, 100)`.
+     * Starts the build chain for the custom dimension ScaledSp from a base Int.
+     * Usage example: `DimenSsp.scaled(16).screen(...)`.
      *
      * PT
-     * Resolução rápida para ID de recurso Largura da Tela (wspRes), mas
-     * na orientação paisagem atua como Altura da Tela (hspRes).
-     * Exemplo de uso: `DimenSsp.wsp_lhRes(context, 100)`.
+     * Inicia a cadeia de construção para a dimensão customizada ScaledSp a partir de um Int base.
+     * Exemplo de uso: `DimenSsp.scaled(16).screen(...)`.
      */
     @JvmStatic
-    fun wsp_lhRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.WIDTH, value, Inverter.PW_TO_LH)
+    fun scaled(initialBaseValue: Int): ScaledSp = ScaledSp(initialBaseValue)
+
+    // EN Rotation facilitator functions for Sp.
+    // PT Funções facilitadoras de rotação para Sp.
 
     /**
-     * EN
-     * Quick resolution for Screen Width resource ID (wspRes), but
-     * in portrait orientation it acts as Screen Height resource ID (hspRes).
-     * Usage example: `DimenSsp.wsp_phRes(context, 100)`.
-     *
-     * PT
-     * Resolução rápida para ID de recurso Largura da Tela (wspRes), mas
-     * na orientação retrato atua como Altura da Tela (hspRes).
-     * Exemplo de uso: `DimenSsp.wsp_phRes(context, 100)`.
+     * EN Facilitator for ssp with rotation override. Usage: `DimenSsp.sspRotate(context, 30, 45, DpQualifier.SMALL_WIDTH)`.
+     * PT Facilitador para ssp com substituição por rotação.
      */
     @JvmStatic
-    fun wsp_phRes(context: Context, value: Int): Int = getResourceId(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH)
-
-    /**
-     * EN
-     * Builds the resource name for a given SSP value.
-     * For negative values, it uses the "_minus" prefix (e.g., _minus10ssp) - Note: SSP only supports positive sizes.
-     * For positive values, it uses a "_" prefix (e.g., _10ssp).
-     *
-     * PT
-     * Constrói o nome do recurso para um determinado valor SSP.
-     * Para valores negativos, usa o prefixo "_minus" (ex: _minus10ssp) - Nota: SSP só suporta tamanhos positivos.
-     * Para valores positivos, usa o prefixo "_" (ex: _10ssp).
-     *
-     * @param value The integer value.
-     * @return The formatted resource name.
-     */
-    private fun buildResourceName(value: Int, sspSuffix: String): String {
-        return "_${value}$sspSuffix"
-    }
-
-    /**
-     * EN
-     * Starts the build chain for the custom dimension Scaled from a base Int.
-     * Usage example: `DimenSsp.scaled(100).screen(...)`.
-     *
-     * PT
-     * Inicia a cadeia de construção para a dimensão customizada Scaled a partir de um Int base.
-     * Exemplo de uso: `DimenSsp.scaled(100).screen(...)`.
-     */
-    @JvmStatic
-    fun scaled(initialBaseValue: Int): Scaled = Scaled(initialBaseValue)
-}
-
-/**
- * EN Starts the build chain for the custom dimension Scaled from a base Int.
- * PT Inicia a cadeia de construção para a dimensão customizada Scaled a partir de um Int base.
- */
-fun Int.scaledSsp(): Scaled = Scaled(this)
-
-/**
- * EN
- * Represents a custom dimension entry with qualifiers and priority for code.
- *
- * PT
- * Representa uma entrada de dimensão customizada com qualificadores e prioridade para código.
- *
- * @param uiModeType The UI mode (CAR, TELEVISION, WATCH, NORMAL). Null for any mode.
- * @param dpQualifierEntry The Dp qualifier entry (type and value, e.g., SMALL_WIDTH > 600). Null if only UI mode is used.
- * @param orientation The screen orientation (LANDSCAPE, PORTRAIT, DEFAULT).
- * @param customValue The int value to be used if the condition is met.
- * @param finalQualifierResolver Optional dimension qualifier (e.g., HEIGHT) to be applied at resolution time.
- * @param fontScale Optional enable/disable font scale.
- * @param priority The resolution priority. 1 is more specific (UI + Qualifier), 3 is less specific (Qualifier only).
- * @param inverter The inverter type to adapt scaling width/height on rotation changes (default is Inverter.DEFAULT).
- */
-data class CustomSspEntry(
-    val uiModeType: UiModeType? = null,
-    val dpQualifierEntry: DpQualifierEntry? = null,
-    val orientation: Orientation = Orientation.DEFAULT,
-    val customValue: Int,
-    val finalQualifierResolver: DpQualifier? = null,
-    val fontScale: Boolean? = true,
-    val priority: Int,
-    val inverter: Inverter = Inverter.DEFAULT
-)
-
-/**
- * EN
- * A class that allows defining custom dimensions based on screen qualifiers.
- * Resolves to the final dimension in pixels.
- *
- * PT
- * Classe que permite definir dimensões customizadas baseadas em qualificadores de tela.
- * Resolve para a dimensão final em pixels.
- */
-class Scaled internal constructor(
-    private val initialBaseValue: Int,
-    private val sortedCustomEntries: List<CustomSspEntry> = emptyList()
-) {
-
-    constructor(initialBaseValue: Int) : this(initialBaseValue, emptyList())
-
-    private fun reorderEntries(newEntry: CustomSspEntry): List<CustomSspEntry> {
-        return (sortedCustomEntries + newEntry).sortedWith(
-            compareBy<CustomSspEntry> { it.priority }
-                .thenByDescending { it.dpQualifierEntry?.value ?: 0 }
-        )
-    }
-
-    /**
-     * EN Priority 1: Most specific qualifier - Combines UiModeType AND Dp Qualifier.
-     * PT Prioridade 1: Qualificador mais específico - Combina UiModeType E Qualificador de Dp.
-     */
     @JvmOverloads
-    fun screen(
+    fun sspRotate(
+        context: Context,
+        value: Int,
+        rotationValue: Int,
+        finalQualifierResolver: DpQualifier = DpQualifier.SMALL_WIDTH,
+        orientation: Orientation = Orientation.LANDSCAPE,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val isTarget = when (orientation) {
+            Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            else -> false
+        }
+        return if (isTarget) getDimensionInSpPx(context, finalQualifierResolver, rotationValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, fontScale = fontScale)
+    }
+
+    /**
+     * EN Facilitator for hsp with rotation override.
+     * PT Facilitador para hsp com substituição por rotação.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun hspRotate(
+        context: Context,
+        value: Int,
+        rotationValue: Int,
+        finalQualifierResolver: DpQualifier = DpQualifier.HEIGHT,
+        orientation: Orientation = Orientation.LANDSCAPE,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val isTarget = when (orientation) {
+            Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            else -> false
+        }
+        return if (isTarget) getDimensionInSpPx(context, finalQualifierResolver, rotationValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.HEIGHT, value, fontScale = fontScale)
+    }
+
+    /**
+     * EN Facilitator for wsp with rotation override.
+     * PT Facilitador para wsp com substituição por rotação.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun wspRotate(
+        context: Context,
+        value: Int,
+        rotationValue: Int,
+        finalQualifierResolver: DpQualifier = DpQualifier.WIDTH,
+        orientation: Orientation = Orientation.LANDSCAPE,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val isTarget = when (orientation) {
+            Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            else -> false
+        }
+        return if (isTarget) getDimensionInSpPx(context, finalQualifierResolver, rotationValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.WIDTH, value, fontScale = fontScale)
+    }
+
+    // EN UiModeType facilitator functions for Sp.
+    // PT Funções facilitadoras de UiModeType para Sp.
+
+    /**
+     * EN Facilitator for ssp with UiModeType override. Usage: `DimenSsp.sspMode(context, 30, 50, UiModeType.TELEVISION)`.
+     * PT Facilitador para ssp com substituição por UiModeType.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun sspMode(
+        context: Context,
+        value: Int,
+        modeValue: Int,
+        uiModeType: UiModeType,
+        foldingFeature: androidx.window.layout.FoldingFeature? = null,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        return if (currentUiModeType == uiModeType)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, modeValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, fontScale = fontScale)
+    }
+
+    /**
+     * EN Facilitator for hsp with UiModeType override.
+     * PT Facilitador para hsp com substituição por UiModeType.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun hspMode(
+        context: Context,
+        value: Int,
+        modeValue: Int,
+        uiModeType: UiModeType,
+        foldingFeature: androidx.window.layout.FoldingFeature? = null,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        return if (currentUiModeType == uiModeType)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.HEIGHT, modeValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.HEIGHT, value, fontScale = fontScale)
+    }
+
+    /**
+     * EN Facilitator for wsp with UiModeType override.
+     * PT Facilitador para wsp com substituição por UiModeType.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun wspMode(
+        context: Context,
+        value: Int,
+        modeValue: Int,
+        uiModeType: UiModeType,
+        foldingFeature: androidx.window.layout.FoldingFeature? = null,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        return if (currentUiModeType == uiModeType)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.WIDTH, modeValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.WIDTH, value, fontScale = fontScale)
+    }
+
+    // EN DpQualifier facilitator functions for Sp.
+    // PT Funções facilitadoras de DpQualifier para Sp.
+
+    /**
+     * EN Facilitator for ssp with DpQualifier override.
+     * PT Facilitador para ssp com substituição por DpQualifier.
+     */
+    @JvmStatic
+    @JvmOverloads
+    @SuppressLint("ConfigurationScreenWidthHeight")
+    fun sspQualifier(
+        context: Context,
+        value: Int,
+        qualifiedValue: Int,
+        qualifierType: DpQualifier,
+        qualifierValue: Int,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val screenValue = when (qualifierType) {
+            DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+            DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+            DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
+        }
+        return if (screenValue >= qualifierValue)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, qualifiedValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, fontScale = fontScale)
+    }
+
+    /**
+     * EN Facilitator for hsp with DpQualifier override.
+     * PT Facilitador para hsp com substituição por DpQualifier.
+     */
+    @JvmStatic
+    @JvmOverloads
+    @SuppressLint("ConfigurationScreenWidthHeight")
+    fun hspQualifier(
+        context: Context,
+        value: Int,
+        qualifiedValue: Int,
+        qualifierType: DpQualifier,
+        qualifierValue: Int,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val screenValue = when (qualifierType) {
+            DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+            DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+            DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
+        }
+        return if (screenValue >= qualifierValue)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.HEIGHT, qualifiedValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.HEIGHT, value, fontScale = fontScale)
+    }
+
+    /**
+     * EN Facilitator for wsp with DpQualifier override.
+     * PT Facilitador para wsp com substituição por DpQualifier.
+     */
+    @JvmStatic
+    @JvmOverloads
+    @SuppressLint("ConfigurationScreenWidthHeight")
+    fun wspQualifier(
+        context: Context,
+        value: Int,
+        qualifiedValue: Int,
+        qualifierType: DpQualifier,
+        qualifierValue: Int,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val screenValue = when (qualifierType) {
+            DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+            DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+            DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
+        }
+        return if (screenValue >= qualifierValue)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.WIDTH, qualifiedValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.WIDTH, value, fontScale = fontScale)
+    }
+
+    // EN UiModeType + DpQualifier combined facilitator functions for Sp.
+    // PT Funções facilitadoras combinadas UiModeType + DpQualifier para Sp.
+
+    /**
+     * EN Facilitator for ssp with combined UiModeType + DpQualifier override.
+     * PT Facilitador para ssp com substituição combinada UiModeType + DpQualifier.
+     */
+    @JvmStatic
+    @JvmOverloads
+    @SuppressLint("ConfigurationScreenWidthHeight")
+    fun sspScreen(
+        context: Context,
+        value: Int,
+        screenValue: Int,
         uiModeType: UiModeType,
         qualifierType: DpQualifier,
         qualifierValue: Int,
-        customValue: Int,
+        foldingFeature: androidx.window.layout.FoldingFeature? = null,
         finalQualifierResolver: DpQualifier? = null,
-        orientation: Orientation = Orientation.DEFAULT,
-        fontScale: Boolean? = true,
-        inverter: Inverter = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSspEntry(
-            uiModeType = uiModeType,
-            dpQualifierEntry = DpQualifierEntry(qualifierType, qualifierValue),
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 1,
-            inverter = inverter
-        )
-        return Scaled(initialBaseValue, reorderEntries(entry))
-    }
-
-    /**
-     * EN Priority 2: UiModeType qualifier.
-     * PT Prioridade 2: Qualificador de UiModeType.
-     */
-    @JvmOverloads
-    fun screen(
-        type: UiModeType, 
-        customValue: Int, 
-        finalQualifierResolver: DpQualifier? = null,
-        orientation: Orientation = Orientation.DEFAULT,
-        fontScale: Boolean? = true,
-        inverter: Inverter = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSspEntry(
-            uiModeType = type,
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 2,
-            inverter = inverter
-        )
-        return Scaled(initialBaseValue, reorderEntries(entry))
-    }
-
-    /**
-     * EN Priority 3: Dp qualifier.
-     * PT Prioridade 3: Qualificador de Dp.
-     */
-    @JvmOverloads
-    fun screen(
-        type: DpQualifier, 
-        value: Int, 
-        customValue: Int, 
-        finalQualifierResolver: DpQualifier? = null,
-        orientation: Orientation = Orientation.DEFAULT,
-        fontScale: Boolean? = true,
-        inverter: Inverter = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSspEntry(
-            dpQualifierEntry = DpQualifierEntry(type, value),
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 3,
-            inverter = inverter
-        )
-        return Scaled(initialBaseValue, reorderEntries(entry))
-    }
-
-    /**
-     * EN Priority 4: Orientation.
-     * PT Prioridade 4: Orientação.
-     */
-    @JvmOverloads
-    fun screen(
-        orientation: Orientation = Orientation.DEFAULT,
-        customValue: Int,
-        finalQualifierResolver: DpQualifier? = null,
-        fontScale: Boolean? = true,
-        inverter: Inverter = Inverter.DEFAULT
-    ): Scaled {
-        val entry = CustomSspEntry(
-            orientation = orientation,
-            customValue = customValue,
-            finalQualifierResolver = finalQualifierResolver,
-            fontScale = fontScale,
-            priority = 4,
-            inverter = inverter
-        )
-        return Scaled(initialBaseValue, reorderEntries(entry))
-    }
-
-    private fun findMatchingEntry(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): CustomSspEntry? {
+        fontScale: Boolean = true
+    ): Float {
         val configuration = context.resources.configuration
         val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
-
-        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
-        return sortedCustomEntries.firstOrNull { entry ->
-            val qualifierEntry = entry.dpQualifierEntry
-            val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
-            
-            val orientationMatch = when (entry.orientation) {
-                Orientation.DEFAULT -> true
-                Orientation.LANDSCAPE -> isLandscape
-                Orientation.PORTRAIT -> isPortrait
-            }
-
-            if (qualifierEntry != null) {
-                val screenQualifierValue = when (qualifierEntry.type) {
-                    DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
-                    DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
-                    DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
-                }
-                val qualifierMatch = screenQualifierValue >= qualifierEntry.value
-
-                if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
-                if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
-
-                return@firstOrNull false
-            } else {
-                // EN Priority 2: Must match only uiModeMatch AND orientationMatch (without Dp qualifier).
-                // PT Prioridade 2: Deve casar apenas uiModeMatch E orientationMatch (sem qualificador de Dp).
-                if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
-
-                // EN Priority 4: Must match only orientationMatch (without Dp qualifier).
-                // PT Prioridade 4: Deve casar apenas orientationMatch (sem qualificador de Dp).
-                if (entry.priority == 4 && orientationMatch) return@firstOrNull true
-
-                return@firstOrNull false
-            }
+        val qualifierScreenValue = when (qualifierType) {
+            DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+            DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+            DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
         }
-    }
-
-    private fun resolve(context: Context, qualifier: DpQualifier, fontScale: Boolean, foldingFeature: androidx.window.layout.FoldingFeature?): Float {
-        val foundEntry = findMatchingEntry(context, foldingFeature)
-        val valueToUse = foundEntry?.customValue ?: initialBaseValue
-        val actualQualifier = foundEntry?.finalQualifierResolver ?: qualifier
-        val finalFontScale = foundEntry?.fontScale ?: fontScale
-        return DimenSsp.getDimensionInPx(context, actualQualifier, valueToUse, finalFontScale, foundEntry?.inverter ?: Inverter.DEFAULT)
-    }
-
-    private fun resolveRes(context: Context, qualifier: DpQualifier, foldingFeature: androidx.window.layout.FoldingFeature?): Int {
-        val foundEntry = findMatchingEntry(context, foldingFeature)
-        val valueToUse = foundEntry?.customValue ?: initialBaseValue
-        val actualQualifier = foundEntry?.finalQualifierResolver ?: qualifier
-        return DimenSsp.getResourceId(context, actualQualifier, valueToUse, foundEntry?.inverter ?: Inverter.DEFAULT)
+        return if (currentUiModeType == uiModeType && qualifierScreenValue >= qualifierValue)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, screenValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, fontScale = fontScale)
     }
 
     /**
-     * EN Final dimension value resolved in pixels.
-     * PT Valor da dimensão final resolvida em pixels.
-     *
-     * @param context Application context
-     * @param fontScale Whether to respect the user's font scaling settings.
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
+     * EN Facilitator for hsp with combined UiModeType + DpQualifier override.
+     * PT Facilitador para hsp com substituição combinada UiModeType + DpQualifier.
      */
+    @JvmStatic
     @JvmOverloads
-    fun ssp(context: Context, fontScale: Boolean = true, foldingFeature: androidx.window.layout.FoldingFeature? = null): Float = resolve(context, DpQualifier.SMALL_WIDTH, fontScale, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved in pixels.
-     * PT Valor da dimensão final resolvida em pixels.
-     *
-     * @param context Application context
-     * @param fontScale Whether to respect the user's font scaling settings.
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun hsp(context: Context, fontScale: Boolean = true, foldingFeature: androidx.window.layout.FoldingFeature? = null): Float = resolve(context, DpQualifier.HEIGHT, fontScale, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved in pixels.
-     * PT Valor da dimensão final resolvida em pixels.
-     *
-     * @param context Application context
-     * @param fontScale Whether to respect the user's font scaling settings.
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun wsp(context: Context, fontScale: Boolean = true, foldingFeature: androidx.window.layout.FoldingFeature? = null): Float = resolve(context, DpQualifier.WIDTH, fontScale, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved as resource ID.
-     * PT Valor da dimensão final resolvida como ID do recurso.
-     *
-     * @param context Application context
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun sspRes(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): Int = resolveRes(context, DpQualifier.SMALL_WIDTH, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved as resource ID.
-     * PT Valor da dimensão final resolvida como ID do recurso.
-     *
-     * @param context Application context
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun hspRes(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): Int = resolveRes(context, DpQualifier.HEIGHT, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved as resource ID.
-     * PT Valor da dimensão final resolvida como ID do recurso.
-     *
-     * @param context Application context
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun wspRes(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): Int = resolveRes(context, DpQualifier.WIDTH, foldingFeature)
+    @SuppressLint("ConfigurationScreenWidthHeight")
+    fun hspScreen(
+        context: Context,
+        value: Int,
+        screenValue: Int,
+        uiModeType: UiModeType,
+        qualifierType: DpQualifier,
+        qualifierValue: Int,
+        foldingFeature: androidx.window.layout.FoldingFeature? = null,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        val qualifierScreenValue = when (qualifierType) {
+            DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+            DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+            DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
+        }
+        return if (currentUiModeType == uiModeType && qualifierScreenValue >= qualifierValue)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.HEIGHT, screenValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.HEIGHT, value, fontScale = fontScale)
+    }
 
     /**
-     * EN Final dimension value resolved in pixels.
-     * PT Valor da dimensão final resolvida em pixels.
-     *
-     * @param context Application context
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
+     * EN Facilitator for wsp with combined UiModeType + DpQualifier override.
+     * PT Facilitador para wsp com substituição combinada UiModeType + DpQualifier.
      */
+    @JvmStatic
     @JvmOverloads
-    fun sem(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): Float = resolve(context, DpQualifier.SMALL_WIDTH, false, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved in pixels.
-     * PT Valor da dimensão final resolvida em pixels.
-     *
-     * @param context Application context
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun hem(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): Float = resolve(context, DpQualifier.HEIGHT, false, foldingFeature)
-    
-    /**
-     * EN Final dimension value resolved in pixels.
-     * PT Valor da dimensão final resolvida em pixels.
-     *
-     * @param context Application context
-     * @param foldingFeature Optional Jetpack WindowManager FoldingFeature to accurately detect foldable states.
-     */
-    @JvmOverloads
-    fun wem(context: Context, foldingFeature: androidx.window.layout.FoldingFeature? = null): Float = resolve(context, DpQualifier.WIDTH, false, foldingFeature)
+    @SuppressLint("ConfigurationScreenWidthHeight")
+    fun wspScreen(
+        context: Context,
+        value: Int,
+        screenValue: Int,
+        uiModeType: UiModeType,
+        qualifierType: DpQualifier,
+        qualifierValue: Int,
+        foldingFeature: androidx.window.layout.FoldingFeature? = null,
+        finalQualifierResolver: DpQualifier? = null,
+        fontScale: Boolean = true
+    ): Float {
+        val configuration = context.resources.configuration
+        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        val qualifierScreenValue = when (qualifierType) {
+            DpQualifier.SMALL_WIDTH -> configuration.smallestScreenWidthDp.toFloat()
+            DpQualifier.HEIGHT -> configuration.screenHeightDp.toFloat()
+            DpQualifier.WIDTH -> configuration.screenWidthDp.toFloat()
+        }
+        return if (currentUiModeType == uiModeType && qualifierScreenValue >= qualifierValue)
+            getDimensionInSpPx(context, finalQualifierResolver ?: DpQualifier.WIDTH, screenValue, fontScale = fontScale)
+        else getDimensionInSpPx(context, DpQualifier.WIDTH, value, fontScale = fontScale)
+    }
 }

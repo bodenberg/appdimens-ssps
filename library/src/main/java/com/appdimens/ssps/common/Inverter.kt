@@ -57,6 +57,30 @@ enum class Inverter {
     LW_TO_PH,
 
     /**
+     * EN Maps Smallest Width to Landscape Height.
+     * PT Mapeia a Smallest Width para a Altura em Paisagem.
+     */
+    SW_TO_LH,
+
+    /**
+     * EN Maps Smallest Width to Landscape Width.
+     * PT Mapeia a Smallest Width para a Largura em Paisagem.
+     */
+    SW_TO_LW,
+
+    /**
+     * EN Maps Smallest Width to Portrait Height.
+     * PT Mapeia a Smallest Width para a Altura em Retrato.
+     */
+    SW_TO_PH,
+
+    /**
+     * EN Maps Smallest Width to Portrait Width.
+     * PT Mapeia a Smallest Width para a Largura em Retrato.
+     */
+    SW_TO_PW,
+
+    /**
      * EN Default behavior, no inversion is applied.
      * PT Comportamento padrão, nenhuma inversão é aplicada.
      */
