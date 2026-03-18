@@ -14,7 +14,7 @@ val isJitPack = System.getenv("JITPACK") == "true"
         || System.getenv("ci") == "true"
 
 mavenPublishing {
-    coordinates("io.github.bodenberg", "appdimens-ssps", "3.0.9")
+    coordinates("io.github.bodenberg", "appdimens-ssps", "3.0.9.1")
 
     configure(
         AndroidSingleVariantLibrary(
@@ -24,12 +24,8 @@ mavenPublishing {
     )
 
     pom {
-        name.set("AppDimens SSP, HSP, WSP")
-        description.set("An extension of AppDimens that implements the SSP (Scaled Density Pixels) " +
-                "standard for text sizes (Sp). It provides pre-calculated @dimen resources, ensuring " +
-                "font size scales consistently across different densities and screen sizes. " +
-                "Essential for responsive and legible text in Compose and XML Views. " +
-                "Scalable width and height fonts for Android layouts")
+        name.set("AppDimens SSP, HSP, WSP: Scalable Width and Height Dimensions (Responsive Layouts)")
+        description.set("AppDimens SSP, HSP, WSP is a modern dimension management system exclusively for typography and fonts (SP) on Android. (dimens, dimension, dimensions, dp, sp, dimen, text unit, font scale, font size, responsive, adaptative, resize, textunit, mm, cm, inch, device, physical, android, dpi, sdpi, hdpi, mdpi, ldpi, precision, absolute, layout, typeface)")
         url.set("https://github.com/bodenberg/appdimens-ssps")
 
         licenses {

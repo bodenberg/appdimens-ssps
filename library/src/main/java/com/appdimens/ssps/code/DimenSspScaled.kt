@@ -78,6 +78,10 @@ class ScaledSp private constructor(
     // EN Fluent methods for construction.
     // PT Métodos fluentes para construção.
 
+    /**
+     * EN Priority 1: Most specific qualifier - Combines UiModeType AND Dp Qualifier (sw, h, w).
+     * PT Prioridade 1: Qualificador mais específico - Combina UiModeType E Qualificador de Dp (sw, h, w).
+     */
     @JvmOverloads
     fun screen(
         uiModeType: UiModeType,
@@ -102,6 +106,10 @@ class ScaledSp private constructor(
         return ScaledSp(initialBaseValue, defaultFontScale, reorderEntries(entry))
     }
 
+    /**
+     * EN Priority 2: UiModeType qualifier (e.g., TELEVISION, WATCH).
+     * PT Prioridade 2: Qualificador de UiModeType (e.g., TELEVISION, WATCH).
+     */
     @JvmOverloads
     fun screen(
         type: UiModeType,
@@ -123,6 +131,10 @@ class ScaledSp private constructor(
         return ScaledSp(initialBaseValue, defaultFontScale, reorderEntries(entry))
     }
 
+    /**
+     * EN Priority 3: Dp qualifier (sw, h, w) without UiModeType restriction.
+     * PT Prioridade 3: Qualificador de Dp (sw, h, w) sem restrição de UiModeType.
+     */
     @JvmOverloads
     fun screen(
         type: DpQualifier,
@@ -145,6 +157,10 @@ class ScaledSp private constructor(
         return ScaledSp(initialBaseValue, defaultFontScale, reorderEntries(entry))
     }
 
+    /**
+     * EN Priority 4: Orientation only.
+     * PT Prioridade 4: Apenas Orientação.
+     */
     @JvmOverloads
     fun screen(
         orientation: Orientation = Orientation.DEFAULT,
@@ -167,6 +183,10 @@ class ScaledSp private constructor(
     // EN Resolution logic.
     // PT Lógica de resolução.
 
+    /**
+     * EN Internal resolution logic for ScaledSp (WITH font scale).
+     * PT Lógica interna de resolução para ScaledSp (COM escala de fonte).
+     */
     @SuppressLint("ConfigurationScreenWidthHeight")
     fun resolve(
         context: Context,
@@ -219,6 +239,10 @@ class ScaledSp private constructor(
         )
     }
 
+    /**
+     * EN Internal resolution logic for ScaledSp (WITHOUT font scale).
+     * PT Lógica interna de resolução para ScaledSp (SEM escala de fonte).
+     */
     fun resolveNoFontScale(
         context: Context,
         qualifier: DpQualifier,
@@ -272,26 +296,50 @@ class ScaledSp private constructor(
     // EN Context-aware resolution methods.
     // PT Métodos de resolução cientes do contexto.
 
+    /**
+     * EN The final dimension value resolved using Smallest Width (WITH font scale).
+     * PT O valor de dimensão final resolvido usando Smallest Width (COM escala de fonte).
+     */
     @JvmOverloads
     fun ssp(context: Context, foldingFeature: FoldingFeature? = null): Float =
         resolve(context, DpQualifier.SMALL_WIDTH, foldingFeature)
 
+    /**
+     * EN The final dimension value resolved using Screen Height (WITH font scale).
+     * PT O valor de dimensão final resolvido usando Altura da Tela (COM escala de fonte).
+     */
     @JvmOverloads
     fun hsp(context: Context, foldingFeature: FoldingFeature? = null): Float =
         resolve(context, DpQualifier.HEIGHT, foldingFeature)
 
+    /**
+     * EN The final dimension value resolved using Screen Width (WITH font scale).
+     * PT O valor de dimensão final resolvido usando Largura da Tela (COM escala de fonte).
+     */
     @JvmOverloads
     fun wsp(context: Context, foldingFeature: FoldingFeature? = null): Float =
         resolve(context, DpQualifier.WIDTH, foldingFeature)
 
+    /**
+     * EN The final dimension value resolved using Smallest Width (WITHOUT FONT SCALE).
+     * PT O valor de dimensão final resolvido usando Smallest Width (SEM ESCALA DE FONTE).
+     */
     @JvmOverloads
     fun sem(context: Context, foldingFeature: FoldingFeature? = null): Float =
         resolveNoFontScale(context, DpQualifier.SMALL_WIDTH, foldingFeature)
 
+    /**
+     * EN The final dimension value resolved using Screen Height (WITHOUT FONT SCALE).
+     * PT O valor de dimensão final resolvido usando Altura da Tela (SEM ESCALA DE FONTE).
+     */
     @JvmOverloads
     fun hem(context: Context, foldingFeature: FoldingFeature? = null): Float =
         resolveNoFontScale(context, DpQualifier.HEIGHT, foldingFeature)
 
+    /**
+     * EN The final dimension value resolved using Screen Width (WITHOUT FONT SCALE).
+     * PT O valor de dimensão final resolvido usando Largura da Tela (SEM ESCALA DE FONTE).
+     */
     @JvmOverloads
     fun wem(context: Context, foldingFeature: FoldingFeature? = null): Float =
         resolveNoFontScale(context, DpQualifier.WIDTH, foldingFeature)

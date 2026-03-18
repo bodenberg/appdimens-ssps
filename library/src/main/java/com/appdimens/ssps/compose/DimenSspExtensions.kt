@@ -80,6 +80,11 @@ fun Int.sspRotate(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)**.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**.
+ * @see DimenSsp.sspRotate
+ */
 @Composable
 fun TextUnit.sspRotate(
     rotationValue: Int,
@@ -91,6 +96,11 @@ fun TextUnit.sspRotate(
     return this.value.toInt().sspRotate(rotationValue, finalQualifierResolver, orientation, enableAdjust, fontScale)
 }
 
+/**
+ * EN extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** (SEM escalonamento por padrão).
+ * @see DimenSsp.sspRotate
+ */
 @Composable
 fun TextUnit.sspRotatePlain(
     rotationValue: Int,
@@ -146,6 +156,11 @@ fun Int.hspRotate(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)**.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)**.
+ * @see DimenSsp.hspRotate
+ */
 @Composable
 fun TextUnit.hspRotate(
     rotationValue: Int,
@@ -157,6 +172,11 @@ fun TextUnit.hspRotate(
     return this.value.toInt().hspRotate(rotationValue, finalQualifierResolver, orientation, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** (SEM escalonamento por padrão).
+ * @see DimenSsp.hspRotate
+ */
 @Composable
 fun TextUnit.hspRotatePlain(
     rotationValue: Int,
@@ -212,6 +232,11 @@ fun Int.wspRotate(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)**.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)**.
+ * @see DimenSsp.wspRotate
+ */
 @Composable
 fun TextUnit.wspRotate(
     rotationValue: Int,
@@ -223,6 +248,11 @@ fun TextUnit.wspRotate(
     return this.value.toInt().wspRotate(rotationValue, finalQualifierResolver, orientation, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** (SEM escalonamento por padrão).
+ * @see DimenSsp.wspRotate
+ */
 @Composable
 fun TextUnit.wspRotatePlain(
     rotationValue: Int,
@@ -292,6 +322,11 @@ fun Int.sspMode(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** and UiModeType.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** e UiModeType.
+ * @see DimenSsp.sspMode
+ */
 @Composable
 fun TextUnit.sspMode(
     modeValue: Int,
@@ -303,6 +338,11 @@ fun TextUnit.sspMode(
     return this.value.toInt().sspMode(modeValue, uiModeType, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** and UiModeType (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** e UiModeType (SEM escalonamento por padrão).
+ * @see DimenSsp.sspMode
+ */
 @Composable
 fun TextUnit.sspModePlain(
     modeValue: Int,
@@ -363,6 +403,11 @@ fun Int.hspMode(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** and UiModeType.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** e UiModeType.
+ * @see DimenSsp.hspMode
+ */
 @Composable
 fun TextUnit.hspMode(
     modeValue: Int,
@@ -374,6 +419,11 @@ fun TextUnit.hspMode(
     return this.value.toInt().hspMode(modeValue, uiModeType, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** and UiModeType (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** e UiModeType (SEM escalonamento por padrão).
+ * @see DimenSsp.hspMode
+ */
 @Composable
 fun TextUnit.hspModePlain(
     modeValue: Int,
@@ -434,6 +484,11 @@ fun Int.wspMode(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** and UiModeType.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** e UiModeType.
+ * @see DimenSsp.wspMode
+ */
 @Composable
 fun TextUnit.wspMode(
     modeValue: Int,
@@ -445,6 +500,11 @@ fun TextUnit.wspMode(
     return this.value.toInt().wspMode(modeValue, uiModeType, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** and UiModeType (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** e UiModeType (SEM escalonamento por padrão).
+ * @see DimenSsp.wspMode
+ */
 @Composable
 fun TextUnit.wspModePlain(
     modeValue: Int,
@@ -503,6 +563,11 @@ fun Int.sspQualifier(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** and DpQualifier.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** e DpQualifier.
+ * @see DimenSsp.sspQualifier
+ */
 @Composable
 fun TextUnit.sspQualifier(
     qualifiedValue: Int,
@@ -515,6 +580,11 @@ fun TextUnit.sspQualifier(
     return this.value.toInt().sspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** and DpQualifier (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** e DpQualifier (SEM escalonamento por padrão).
+ * @see DimenSsp.sspQualifier
+ */
 @Composable
 fun TextUnit.sspQualifierPlain(
     qualifiedValue: Int,
@@ -563,6 +633,11 @@ fun Int.hspQualifier(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** and DpQualifier.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** e DpQualifier.
+ * @see DimenSsp.hspQualifier
+ */
 @Composable
 fun TextUnit.hspQualifier(
     qualifiedValue: Int,
@@ -575,6 +650,11 @@ fun TextUnit.hspQualifier(
     return this.value.toInt().hspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** and DpQualifier (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** e DpQualifier (SEM escalonamento por padrão).
+ * @see DimenSsp.hspQualifier
+ */
 @Composable
 fun TextUnit.hspQualifierPlain(
     qualifiedValue: Int,
@@ -623,6 +703,11 @@ fun Int.wspQualifier(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** and DpQualifier.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** e DpQualifier.
+ * @see DimenSsp.wspQualifier
+ */
 @Composable
 fun TextUnit.wspQualifier(
     qualifiedValue: Int,
@@ -635,6 +720,11 @@ fun TextUnit.wspQualifier(
     return this.value.toInt().wspQualifier(qualifiedValue, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** and DpQualifier (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** e DpQualifier (SEM escalonamento por padrão).
+ * @see DimenSsp.wspQualifier
+ */
 @Composable
 fun TextUnit.wspQualifierPlain(
     qualifiedValue: Int,
@@ -698,6 +788,11 @@ fun Int.sspScreen(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** and screen configuration.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** e configuração de tela.
+ * @see DimenSsp.sspScreen
+ */
 @Composable
 fun TextUnit.sspScreen(
     screenValue: Int,
@@ -711,6 +806,11 @@ fun TextUnit.sspScreen(
     return this.value.toInt().sspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)** and screen configuration (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)** e configuração de tela (SEM escalonamento por padrão).
+ * @see DimenSsp.sspScreen
+ */
 @Composable
 fun TextUnit.sspScreenPlain(
     screenValue: Int,
@@ -779,6 +879,11 @@ fun Int.hspScreen(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** and screen configuration.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** e configuração de tela.
+ * @see DimenSsp.hspScreen
+ */
 @Composable
 fun TextUnit.hspScreen(
     screenValue: Int,
@@ -792,6 +897,11 @@ fun TextUnit.hspScreen(
     return this.value.toInt().hspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)** and screen configuration (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)** e configuração de tela (SEM escalonamento por padrão).
+ * @see DimenSsp.hspScreen
+ */
 @Composable
 fun TextUnit.hspScreenPlain(
     screenValue: Int,
@@ -860,6 +970,11 @@ fun Int.wspScreen(
     }
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** and screen configuration.
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** e configuração de tela.
+ * @see DimenSsp.wspScreen
+ */
 @Composable
 fun TextUnit.wspScreen(
     screenValue: Int,
@@ -873,6 +988,11 @@ fun TextUnit.wspScreen(
     return this.value.toInt().wspScreen(screenValue, uiModeType, qualifierType, qualifierValue, finalQualifierResolver, enableAdjust, fontScale)
 }
 
+/**
+ * EN Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)** and screen configuration (WITHOUT scaling by default).
+ * PT Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)** e configuração de tela (SEM escalonamento por padrão).
+ * @see DimenSsp.wspScreen
+ */
 @Composable
 fun TextUnit.wspScreenPlain(
     screenValue: Int,
