@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.TextUnit
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
@@ -340,6 +341,16 @@ class ScaledSp private constructor(
     val ssp: TextUnit get() = resolve(DpQualifier.SMALL_WIDTH)
 
     /**
+     * EN
+     * Pixel version of ssp.
+     *
+     * PT
+     * Versão em pixel de ssp.
+     */
+    @get:Composable
+    val sspPx: Float get() = LocalDensity.current.run { ssp.toPx() }
+
+    /**
      * EN The final TextUnit (Sp) value resolved using Screen Height (WITH font scale).
      * PT O valor final TextUnit (Sp) resolvido usando Altura da Tela (COM escala de fonte).
      */
@@ -347,11 +358,31 @@ class ScaledSp private constructor(
     val hsp: TextUnit get() = resolve(DpQualifier.HEIGHT)
 
     /**
+     * EN
+     * Pixel version of hsp.
+     *
+     * PT
+     * Versão em pixel de hsp.
+     */
+    @get:Composable
+    val hspPx: Float get() = LocalDensity.current.run { hsp.toPx() }
+
+    /**
      * EN The final TextUnit (Sp) value resolved using Screen Width (WITH font scale).
      * PT O valor final TextUnit (Sp) resolvido usando Largura da Tela (COM escala de fonte).
      */
     @get:Composable
     val wsp: TextUnit get() = resolve(DpQualifier.WIDTH)
+
+    /**
+     * EN
+     * Pixel version of wsp.
+     *
+     * PT
+     * Versão em pixel de wsp.
+     */
+    @get:Composable
+    val wspPx: Float get() = LocalDensity.current.run { wsp.toPx() }
 
     /**
      * EN The final TextUnit (Sp) value resolved using Smallest Width (WITHOUT FONT SCALE).
@@ -363,6 +394,16 @@ class ScaledSp private constructor(
     val sem: TextUnit get() = resolveNoFontScale(DpQualifier.SMALL_WIDTH)
 
     /**
+     * EN
+     * Pixel version of sem.
+     *
+     * PT
+     * Versão em pixel de sem.
+     */
+    @get:Composable
+    val semPx: Float get() = LocalDensity.current.run { sem.toPx() }
+
+    /**
      * EN The final TextUnit (Sp) value resolved using Screen Height (WITHOUT FONT SCALE).
      * PT O valor final TextUnit (Sp) resolvido usando Altura da Tela (SEM ESCALA DE FONTE).
      */
@@ -370,9 +411,29 @@ class ScaledSp private constructor(
     val hem: TextUnit get() = resolveNoFontScale(DpQualifier.HEIGHT)
 
     /**
+     * EN
+     * Pixel version of hem.
+     *
+     * PT
+     * Versão em pixel de hem.
+     */
+    @get:Composable
+    val hemPx: Float get() = LocalDensity.current.run { hem.toPx() }
+
+    /**
      * EN The final TextUnit (Sp) value resolved using Screen Width (WITHOUT FONT SCALE).
      * PT O valor final TextUnit (Sp) resolvido usando Largura da Tela (SEM ESCALA DE FONTE).
      */
     @get:Composable
     val wem: TextUnit get() = resolveNoFontScale(DpQualifier.WIDTH)
+
+    /**
+     * EN
+     * Pixel version of wem.
+     *
+     * PT
+     * Versão em pixel de wem.
+     */
+    @get:Composable
+    val wemPx: Float get() = LocalDensity.current.run { wem.toPx() }
 }

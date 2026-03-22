@@ -37,12 +37,12 @@ import kotlin.math.abs
 /**
  * EN
  * Utility object for handling SSP (Scalable Sp) dimensions from code (non-Compose).
- * Reuses the existing XML DP resources (`_Nsdp`, `_Nhdp`, `_Nwdp`) and converts
+ * Reuses the existing XML DP resources (`_Nssp`, `_Nhsp`, `_Nwsp`) and converts
  * the resulting Dp value to a Sp (pixels) value, respecting or ignoring the system font scale.
  *
  * PT
  * Objeto utilitário para manipulação de dimensões SSP (Sp escalável) a partir de código (não-Compose).
- * Reutiliza os recursos XML de DP existentes (`_Nsdp`, `_Nhdp`, `_Nwdp`) e converte
+ * Reutiliza os recursos XML de DP existentes (`_Nssp`, `_Nhsp`, `_Nwsp`) e converte
  * o valor Dp resultante para um valor Sp (pixels), respeitando ou ignorando a escala de fonte.
  */
 object DimenSsp {
@@ -140,8 +140,8 @@ object DimenSsp {
         }
 
         val safeValue = value.coerceIn(MIN_VALUE, MAX_VALUE)
-        // EN Reuses DP resource naming convention: _Nsdp, _Nhdp, _Nwdp.
-        // PT Reutiliza convenção de nomenclatura DP: _Nsdp, _Nhdp, _Nwdp.
+        // EN Reuses DP resource naming convention: _Nssp, _Nhsp, _Nwsp.
+        // PT Reutiliza convenção de nomenclatura DP: _Nssp, _Nhsp, _Nwsp.
         val suffix = when (actualQualifier) {
             DpQualifier.SMALL_WIDTH -> "ssp"
             DpQualifier.HEIGHT -> "hsp"

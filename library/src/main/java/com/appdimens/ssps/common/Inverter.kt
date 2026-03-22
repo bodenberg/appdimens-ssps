@@ -1,6 +1,6 @@
 /**
  * Author & Developer: Jean Bodenberg
- * GIT: https://github.com/bodenberg/appdimens-sdps.git
+ * GIT: https://github.com/bodenberg/appdimens-ssps.git
  * Date: 2025-10-04
  *
  * Library: AppDimens
