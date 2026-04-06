@@ -10,7 +10,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bodenberg:appdimens-ssps:3.1.0")
+    implementation("io.github.bodenberg:appdimens-ssps:3.1.2")
 }
 ```
 
@@ -73,6 +73,7 @@ val widthToHeight = 50.wspLh
 
 **Facilitators — Quick Conditional Overrides:**
 ```kotlin
+import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.compose.sspRotate
 import com.appdimens.ssps.compose.sspMode
 import com.appdimens.ssps.compose.sspQualifier
@@ -82,11 +83,19 @@ import com.appdimens.ssps.compose.sspScreen
 // 1. Int variant (Scales result by default)
 val size1 = 16.sspRotate(24) // 16.ssp default, 24.ssp in Landscape
 
-// 2. TextUnit variant (Returns raw Sp if not in Landscape)
+// 2. TextUnit receiver + Int rotation (Plain receiver: keeps raw TextUnit if not in target orientation;
+//    rotation branch still resolves the Int via resources)
 val size2 = 16.ssp.sspRotatePlain(24) // 16.ssp default, 24.ssp in Landscape, raw 16.sp otherwise
 
 // 3. TextUnit variant (Follows Int logic)
 val size3 = 16.sp.sspRotate(24) // 16.ssp default, 24.ssp in Landscape
+
+// 4. Two pre-resolved TextUnits — no resource lookup; only orientation branch (same for .hsp/.wsp)
+val size4 = 30.ssp.sspRotatePlain(20.ssp)
+val size5 = 30.ssp.sspRotatePlain(20.ssp, Orientation.LANDSCAPE) // orientation optional; default is LANDSCAPE
+
+// 5. Nested extensions (inner expression runs first)
+val size6 = 16.ssp.sspRotatePlain(20.ssp.sspRotatePlain(14.ssp))
 
 // Other Facilitators:
 val modeVal = 16.sspMode(40, UiModeType.TELEVISION)
@@ -94,8 +103,16 @@ val qualVal = 16.sspQualifier(24, DpQualifier.SMALL_WIDTH, 600)
 val scrVal = 16.sspScreen(32, UiModeType.TELEVISION, DpQualifier.SMALL_WIDTH, 600)
 ```
 
+**Nesting extensions vs. `scaledSp().screen(...)`**
+
+- You can chain facilitator extensions (e.g. nested `sspRotatePlain`). Evaluation order is **inside-out**, i.e. the order of nesting in code.
+- For nesting, prefer **`sspRotatePlain` / `hspRotatePlain` / `wspRotatePlain` with two `TextUnit` arguments** so neither operand of that call is passed through another resource resolution step. Alternatively, use the `TextUnit` + `TextUnit` overload so both sides are already the final scaled values you want.
+- **`scaledSp().screen(...)`** builds a list of rules sorted by **priority** (and tie-breakers on dp thresholds). The first matching rule wins — this is **not** the same as nested extension order.
+- Plain `TextUnit` + `Int` `*RotatePlain` still resolves the **rotation** `Int` via the library; only the **receiver** stays untouched when the orientation does not match.
+
 **DimenSspScaled Builder — Complex Multi-Condition Chains:**
 ```kotlin
+import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.compose.scaledSp
 
 val dynamicText = 16.scaledSp()

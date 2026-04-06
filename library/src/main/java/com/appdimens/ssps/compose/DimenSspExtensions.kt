@@ -151,13 +151,17 @@ fun TextUnit.sspRotatePx(
  * Extension for TextUnit (Sp) with dynamic scaling based on **Smallest Width (swDP)**.
  * Returns the original raw TextUnit value if the condition is not met.
  * When the device is in the specified [orientation], it uses [rotationValue]
- * scaled with the given [finalQualifierResolver].
+ * scaled with the given [finalQualifierResolver] (resource lookup via [toDynamicScaledSp]).
+ * For both operands already resolved as [TextUnit] with no further conversion, use the overload
+ * `sspRotatePlain(rotation: TextUnit, orientation)`.
  *
  * PT
  * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Smallest Width (swDP)**.
  * Retorna o valor original de TextUnit bruto se a condição não for atendida.
  * Quando o dispositivo está na [orientation] especificada, usa [rotationValue]
- * escalado com o [finalQualifierResolver] dado.
+ * escalado com o [finalQualifierResolver] dado (resolução de recurso via [toDynamicScaledSp]).
+ * Se ambos os operandos já estiverem resolvidos como [TextUnit] sem nova conversão, use a sobrecarga
+ * `sspRotatePlain(rotation: TextUnit, orientation)`.
  */
 @Composable
 fun TextUnit.sspRotatePlain(
@@ -194,6 +198,52 @@ fun TextUnit.sspRotatePlainPx(
     fontScale: Boolean = true
 ): Float {
     return LocalDensity.current.run { sspRotatePlain(rotationValue, finalQualifierResolver, orientation, fontScale).toPx() }
+}
+
+/**
+ * EN
+ * Plain rotation using two pre-resolved [TextUnit] values: no resource lookup, no
+ * [toDynamicScaledSp], and no [finalQualifierResolver] / [fontScale] — only orientation logic.
+ * When the device matches [orientation], returns [rotation]; otherwise returns `this`.
+ * Nested calls evaluate inner expressions first; order follows Kotlin evaluation, unlike
+ * [ScaledSp.screen] rules which use fixed entry priority (see [ScaledSp]).
+ * Example: `30.ssp.sspRotatePlain(20.ssp)` or `30.ssp.sspRotatePlain(20.ssp, Orientation.LANDSCAPE)`.
+ *
+ * PT
+ * Rotação “plain” com dois [TextUnit] já resolvidos: sem lookup de recurso, sem
+ * [toDynamicScaledSp] e sem [finalQualifierResolver] / [fontScale] — apenas a lógica de orientação.
+ * Quando o dispositivo corresponde a [orientation], devolve [rotation]; caso contrário devolve `this`.
+ * Chamadas aninhadas avaliam primeiro o interior; a ordem segue a avaliação em Kotlin, ao contrário
+ * das regras [ScaledSp.screen], que usam prioridade fixa das entradas (ver [ScaledSp]).
+ * Exemplo: `30.ssp.sspRotatePlain(20.ssp)` ou `30.ssp.sspRotatePlain(20.ssp, Orientation.LANDSCAPE)`.
+ */
+@Composable
+fun TextUnit.sspRotatePlain(
+    rotation: TextUnit,
+    orientation: Orientation = Orientation.LANDSCAPE
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val isTargetOrientation = when (orientation) {
+        Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        else -> false
+    }
+    return if (isTargetOrientation) rotation else this
+}
+
+/**
+ * EN
+ * Pixel version of [sspRotatePlain] with two [TextUnit] operands.
+ *
+ * PT
+ * Versão em pixel de [sspRotatePlain] com dois operandos [TextUnit].
+ */
+@Composable
+fun TextUnit.sspRotatePlainPx(
+    rotation: TextUnit,
+    orientation: Orientation = Orientation.LANDSCAPE
+): Float {
+    return LocalDensity.current.run { sspRotatePlain(rotation, orientation).toPx() }
 }
 
 /**
@@ -301,13 +351,17 @@ fun TextUnit.hspRotatePx(
  * Extension for TextUnit (Sp) with dynamic scaling based on **Screen Height (hDP)**.
  * Returns the original raw TextUnit value if the condition is not met.
  * When the device is in the specified [orientation], it uses [rotationValue]
- * scaled with the given [finalQualifierResolver].
+ * scaled with the given [finalQualifierResolver] (resource lookup via [toDynamicScaledSp]).
+ * For both operands already resolved as [TextUnit] with no further conversion, use
+ * `hspRotatePlain(rotation: TextUnit, orientation)`.
  *
  * PT
  * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Altura da Tela (hDP)**.
  * Retorna o valor original de TextUnit bruto se a condição não for atendida.
  * Quando o dispositivo está na [orientation] especificada, usa [rotationValue]
- * escalado com o [finalQualifierResolver] dado.
+ * escalado com o [finalQualifierResolver] dado (resolução de recurso via [toDynamicScaledSp]).
+ * Se ambos os operandos já estiverem resolvidos como [TextUnit] sem nova conversão, use
+ * `hspRotatePlain(rotation: TextUnit, orientation)`.
  */
 @Composable
 fun TextUnit.hspRotatePlain(
@@ -344,6 +398,48 @@ fun TextUnit.hspRotatePlainPx(
     fontScale: Boolean = true
 ): Float {
     return LocalDensity.current.run { hspRotatePlain(rotationValue, finalQualifierResolver, orientation, fontScale).toPx() }
+}
+
+/**
+ * EN
+ * Plain rotation using two pre-resolved [TextUnit] values (height axis naming only): no resource
+ * lookup and no [toDynamicScaledSp]. When the device matches [orientation], returns [rotation];
+ * otherwise returns `this`. Nested evaluation order follows Kotlin; [ScaledSp.screen] uses fixed
+ * entry priority instead (see [ScaledSp]). Example: `30.hsp.hspRotatePlain(20.hsp)`.
+ *
+ * PT
+ * Rotação “plain” com dois [TextUnit] já resolvidos (nomeação do eixo altura): sem lookup nem
+ * [toDynamicScaledSp]. Se a orientação for [orientation], devolve [rotation]; senão `this`.
+ * Aninhamento segue a avaliação em Kotlin; [ScaledSp.screen] usa prioridade fixa (ver [ScaledSp]).
+ * Exemplo: `30.hsp.hspRotatePlain(20.hsp)`.
+ */
+@Composable
+fun TextUnit.hspRotatePlain(
+    rotation: TextUnit,
+    orientation: Orientation = Orientation.LANDSCAPE
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val isTargetOrientation = when (orientation) {
+        Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        else -> false
+    }
+    return if (isTargetOrientation) rotation else this
+}
+
+/**
+ * EN
+ * Pixel version of [hspRotatePlain] with two [TextUnit] operands.
+ *
+ * PT
+ * Versão em pixel de [hspRotatePlain] com dois operandos [TextUnit].
+ */
+@Composable
+fun TextUnit.hspRotatePlainPx(
+    rotation: TextUnit,
+    orientation: Orientation = Orientation.LANDSCAPE
+): Float {
+    return LocalDensity.current.run { hspRotatePlain(rotation, orientation).toPx() }
 }
 
 /**
@@ -451,13 +547,17 @@ fun TextUnit.wspRotatePx(
  * Extension for TextUnit (Sp) with dynamic scaling based on **Screen Width (wDP)**.
  * Returns the original raw TextUnit value if the condition is not met.
  * When the device is in the specified [orientation], it uses [rotationValue]
- * scaled with the given [finalQualifierResolver].
+ * scaled with the given [finalQualifierResolver] (resource lookup via [toDynamicScaledSp]).
+ * For both operands already resolved as [TextUnit] with no further conversion, use
+ * `wspRotatePlain(rotation: TextUnit, orientation)`.
  *
  * PT
  * Extensão para TextUnit (Sp) com dimensionamento dinâmico baseado na **Largura da Tela (wDP)**.
  * Retorna o valor original de TextUnit bruto se a condição não for atendida.
  * Quando o dispositivo está na [orientation] especificada, usa [rotationValue]
- * escalado com o [finalQualifierResolver] dado.
+ * escalado com o [finalQualifierResolver] dado (resolução de recurso via [toDynamicScaledSp]).
+ * Se ambos os operandos já estiverem resolvidos como [TextUnit] sem nova conversão, use
+ * `wspRotatePlain(rotation: TextUnit, orientation)`.
  */
 @Composable
 fun TextUnit.wspRotatePlain(
@@ -494,6 +594,48 @@ fun TextUnit.wspRotatePlainPx(
     fontScale: Boolean = true
 ): Float {
     return LocalDensity.current.run { wspRotatePlain(rotationValue, finalQualifierResolver, orientation, fontScale).toPx() }
+}
+
+/**
+ * EN
+ * Plain rotation using two pre-resolved [TextUnit] values (width axis naming only): no resource
+ * lookup and no [toDynamicScaledSp]. When the device matches [orientation], returns [rotation];
+ * otherwise returns `this`. Nested evaluation order follows Kotlin; [ScaledSp.screen] uses fixed
+ * entry priority instead (see [ScaledSp]). Example: `30.wsp.wspRotatePlain(20.wsp)`.
+ *
+ * PT
+ * Rotação “plain” com dois [TextUnit] já resolvidos (nomeação do eixo largura): sem lookup nem
+ * [toDynamicScaledSp]. Se a orientação for [orientation], devolve [rotation]; senão `this`.
+ * Aninhamento segue a avaliação em Kotlin; [ScaledSp.screen] usa prioridade fixa (ver [ScaledSp]).
+ * Exemplo: `30.wsp.wspRotatePlain(20.wsp)`.
+ */
+@Composable
+fun TextUnit.wspRotatePlain(
+    rotation: TextUnit,
+    orientation: Orientation = Orientation.LANDSCAPE
+): TextUnit {
+    val configuration = LocalConfiguration.current
+    val isTargetOrientation = when (orientation) {
+        Orientation.LANDSCAPE -> configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Orientation.PORTRAIT -> configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        else -> false
+    }
+    return if (isTargetOrientation) rotation else this
+}
+
+/**
+ * EN
+ * Pixel version of [wspRotatePlain] with two [TextUnit] operands.
+ *
+ * PT
+ * Versão em pixel de [wspRotatePlain] com dois operandos [TextUnit].
+ */
+@Composable
+fun TextUnit.wspRotatePlainPx(
+    rotation: TextUnit,
+    orientation: Orientation = Orientation.LANDSCAPE
+): Float {
+    return LocalDensity.current.run { wspRotatePlain(rotation, orientation).toPx() }
 }
 
 // EN Helps extract the activity from context wrapper (Sp version)

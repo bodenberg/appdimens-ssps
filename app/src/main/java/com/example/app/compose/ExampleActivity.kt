@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.appdimens.ssps.common.DpQualifier
+import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
 import com.appdimens.ssps.compose.*
 
@@ -165,6 +166,22 @@ fun AppDimensSspExampleScreen() {
                 description = "Easy to use functions for common conditional scaling scenarios."
             ) {
                 Text("Rotate: 16.sspRotate(24) (24 in Landscape)", fontSize = 16.sspRotate(24))
+                // [EN] Plain with two TextUnits — no extra resource resolution on this call.
+                // [PT] Plain com dois TextUnits — sem nova resolução de recurso nesta chamada.
+                Text(
+                    "RotatePlain (2× TextUnit): 16.ssp.sspRotatePlain(22.ssp)",
+                    fontSize = 16.ssp.sspRotatePlain(22.ssp)
+                )
+                Text(
+                    "RotatePlain + Orientation: 14.ssp.sspRotatePlain(20.ssp, PORTRAIT)",
+                    fontSize = 14.ssp.sspRotatePlain(20.ssp, Orientation.PORTRAIT)
+                )
+                // [EN] Inner sspRotatePlain runs first, then outer uses that result as rotation TextUnit.
+                // [PT] O sspRotatePlain interior avalia primeiro; o exterior usa esse resultado como TextUnit de rotação.
+                Text(
+                    "Nested Plain: 16.ssp.sspRotatePlain(20.ssp.sspRotatePlain(14.ssp))",
+                    fontSize = 16.ssp.sspRotatePlain(20.ssp.sspRotatePlain(14.ssp))
+                )
                 Text("Mode: 16.sspMode(30, UiModeType.TELEVISION)", fontSize = 16.sspMode(30, UiModeType.TELEVISION))
                 Text("Qualifier: 16.sspQualifier(20, DpQualifier.SMALL_WIDTH, 600)", fontSize = 16.sspQualifier(20, DpQualifier.SMALL_WIDTH, 600))
             }
