@@ -109,6 +109,69 @@ fun Int.wspLh(context: Context): Float = DimenSsp.wspLh(context, this)
  */
 fun Int.wspPh(context: Context): Float = DimenSsp.wspPh(context, this)
 
+// -------------------------------------------------------------------------
+// Aspect-ratio-aware (*a / *ia) — parity with appdimens-sdps / appdimens-dynamic.
+// -------------------------------------------------------------------------
+
+private fun Number.toSspIndex(): Int =
+    kotlin.math.round(this.toDouble()).toInt().coerceIn(1, 600)
+
+fun Number.sspa(context: Context): Float = this.toSspIndex().let { DimenSsp.sspa(context, it) }
+fun Number.sspia(context: Context): Float = sspa(context)
+
+fun Int.sspa(context: Context): Float = DimenSsp.sspa(context, this.coerceIn(1, 600))
+fun Int.sspia(context: Context): Float = DimenSsp.sspia(context, this.coerceIn(1, 600))
+fun Float.sspa(context: Context): Float = this.toSspIndex().let { DimenSsp.sspa(context, it) }
+fun Float.sspia(context: Context): Float = sspa(context)
+
+fun Number.sspPha(context: Context): Float = this.toSspIndex().let { DimenSsp.sspPha(context, it) }
+fun Number.sspPhia(context: Context): Float = sspPha(context)
+fun Number.sspLha(context: Context): Float = this.toSspIndex().let { DimenSsp.sspLha(context, it) }
+fun Number.sspLhia(context: Context): Float = sspLha(context)
+fun Number.sspPwa(context: Context): Float = this.toSspIndex().let { DimenSsp.sspPwa(context, it) }
+fun Number.sspPwia(context: Context): Float = sspPwa(context)
+fun Number.sspLwa(context: Context): Float = this.toSspIndex().let { DimenSsp.sspLwa(context, it) }
+fun Number.sspLwia(context: Context): Float = sspLwa(context)
+
+fun Number.hspa(context: Context): Float = this.toSspIndex().let { DimenSsp.hspa(context, it) }
+fun Number.hspia(context: Context): Float = hspa(context)
+fun Int.hspa(context: Context): Float = DimenSsp.hspa(context, this.coerceIn(1, 600))
+fun Int.hspia(context: Context): Float = DimenSsp.hspia(context, this.coerceIn(1, 600))
+fun Float.hspa(context: Context): Float = this.toSspIndex().let { DimenSsp.hspa(context, it) }
+fun Float.hspia(context: Context): Float = hspa(context)
+fun Number.hspLwa(context: Context): Float = this.toSspIndex().let { DimenSsp.hspLwa(context, it) }
+fun Number.hspLwia(context: Context): Float = hspLwa(context)
+fun Number.hspPwa(context: Context): Float = this.toSspIndex().let { DimenSsp.hspPwa(context, it) }
+fun Number.hspPwia(context: Context): Float = hspPwa(context)
+
+fun Number.wspa(context: Context): Float = this.toSspIndex().let { DimenSsp.wspa(context, it) }
+fun Number.wspia(context: Context): Float = wspa(context)
+fun Int.wspa(context: Context): Float = DimenSsp.wspa(context, this.coerceIn(1, 600))
+fun Int.wspia(context: Context): Float = DimenSsp.wspia(context, this.coerceIn(1, 600))
+fun Float.wspa(context: Context): Float = this.toSspIndex().let { DimenSsp.wspa(context, it) }
+fun Float.wspia(context: Context): Float = wspa(context)
+fun Number.wspLha(context: Context): Float = this.toSspIndex().let { DimenSsp.wspLha(context, it) }
+fun Number.wspLhia(context: Context): Float = wspLha(context)
+fun Number.wspPha(context: Context): Float = this.toSspIndex().let { DimenSsp.wspPha(context, it) }
+fun Number.wspPhia(context: Context): Float = wspPha(context)
+
+fun Int.sspPha(context: Context): Float = DimenSsp.sspPha(context, coerceIn(1, 600))
+fun Int.sspPhia(context: Context): Float = sspPha(context)
+fun Int.sspLha(context: Context): Float = DimenSsp.sspLha(context, coerceIn(1, 600))
+fun Int.sspLhia(context: Context): Float = sspLha(context)
+fun Int.sspPwa(context: Context): Float = DimenSsp.sspPwa(context, coerceIn(1, 600))
+fun Int.sspPwia(context: Context): Float = sspPwa(context)
+fun Int.sspLwa(context: Context): Float = DimenSsp.sspLwa(context, coerceIn(1, 600))
+fun Int.sspLwia(context: Context): Float = sspLwa(context)
+fun Int.hspLwa(context: Context): Float = DimenSsp.hspLwa(context, coerceIn(1, 600))
+fun Int.hspLwia(context: Context): Float = hspLwa(context)
+fun Int.hspPwa(context: Context): Float = DimenSsp.hspPwa(context, coerceIn(1, 600))
+fun Int.hspPwia(context: Context): Float = hspPwa(context)
+fun Int.wspLha(context: Context): Float = DimenSsp.wspLha(context, coerceIn(1, 600))
+fun Int.wspLhia(context: Context): Float = wspLha(context)
+fun Int.wspPha(context: Context): Float = DimenSsp.wspPha(context, coerceIn(1, 600))
+fun Int.wspPhia(context: Context): Float = wspPha(context)
+
 // EN WITHOUT FONT SCALE variants
 // PT Variantes SEM ESCALA DE FONTE
 
@@ -188,6 +251,62 @@ fun Int.wemLh(context: Context): Float = DimenSsp.wemLh(context, this)
  * @see DimenSsp.wemPh
  */
 fun Int.wemPh(context: Context): Float = DimenSsp.wemPh(context, this)
+
+// Aspect-ratio + sem/hem/wem (no system font scale in DimenSsp path).
+
+fun Number.sema(context: Context): Float = this.toSspIndex().let { DimenSsp.sema(context, it) }
+fun Number.semia(context: Context): Float = sema(context)
+fun Int.sema(context: Context): Float = DimenSsp.sema(context, this.coerceIn(1, 600))
+fun Int.semia(context: Context): Float = DimenSsp.semia(context, this.coerceIn(1, 600))
+fun Float.sema(context: Context): Float = this.toSspIndex().let { DimenSsp.sema(context, it) }
+fun Float.semia(context: Context): Float = sema(context)
+fun Number.semPha(context: Context): Float = this.toSspIndex().let { DimenSsp.semPha(context, it) }
+fun Number.semPhia(context: Context): Float = semPha(context)
+fun Number.semLha(context: Context): Float = this.toSspIndex().let { DimenSsp.semLha(context, it) }
+fun Number.semLhia(context: Context): Float = semLha(context)
+fun Number.semPwa(context: Context): Float = this.toSspIndex().let { DimenSsp.semPwa(context, it) }
+fun Number.semPwia(context: Context): Float = semPwa(context)
+fun Number.semLwa(context: Context): Float = this.toSspIndex().let { DimenSsp.semLwa(context, it) }
+fun Number.semLwia(context: Context): Float = semLwa(context)
+
+fun Number.hema(context: Context): Float = this.toSspIndex().let { DimenSsp.hema(context, it) }
+fun Number.hemia(context: Context): Float = hema(context)
+fun Int.hema(context: Context): Float = DimenSsp.hema(context, this.coerceIn(1, 600))
+fun Int.hemia(context: Context): Float = DimenSsp.hemia(context, this.coerceIn(1, 600))
+fun Float.hema(context: Context): Float = this.toSspIndex().let { DimenSsp.hema(context, it) }
+fun Float.hemia(context: Context): Float = hema(context)
+fun Number.hemLwa(context: Context): Float = this.toSspIndex().let { DimenSsp.hemLwa(context, it) }
+fun Number.hemLwia(context: Context): Float = hemLwa(context)
+fun Number.hemPwa(context: Context): Float = this.toSspIndex().let { DimenSsp.hemPwa(context, it) }
+fun Number.hemPwia(context: Context): Float = hemPwa(context)
+
+fun Number.wema(context: Context): Float = this.toSspIndex().let { DimenSsp.wema(context, it) }
+fun Number.wemia(context: Context): Float = wema(context)
+fun Int.wema(context: Context): Float = DimenSsp.wema(context, this.coerceIn(1, 600))
+fun Int.wemia(context: Context): Float = DimenSsp.wemia(context, this.coerceIn(1, 600))
+fun Float.wema(context: Context): Float = this.toSspIndex().let { DimenSsp.wema(context, it) }
+fun Float.wemia(context: Context): Float = wema(context)
+fun Number.wemLha(context: Context): Float = this.toSspIndex().let { DimenSsp.wemLha(context, it) }
+fun Number.wemLhia(context: Context): Float = wemLha(context)
+fun Number.wemPha(context: Context): Float = this.toSspIndex().let { DimenSsp.wemPha(context, it) }
+fun Number.wemPhia(context: Context): Float = wemPha(context)
+
+fun Int.semPha(context: Context): Float = DimenSsp.semPha(context, coerceIn(1, 600))
+fun Int.semPhia(context: Context): Float = semPha(context)
+fun Int.semLha(context: Context): Float = DimenSsp.semLha(context, coerceIn(1, 600))
+fun Int.semLhia(context: Context): Float = semLha(context)
+fun Int.semPwa(context: Context): Float = DimenSsp.semPwa(context, coerceIn(1, 600))
+fun Int.semPwia(context: Context): Float = semPwa(context)
+fun Int.semLwa(context: Context): Float = DimenSsp.semLwa(context, coerceIn(1, 600))
+fun Int.semLwia(context: Context): Float = semLwa(context)
+fun Int.hemLwa(context: Context): Float = DimenSsp.hemLwa(context, coerceIn(1, 600))
+fun Int.hemLwia(context: Context): Float = hemLwa(context)
+fun Int.hemPwa(context: Context): Float = DimenSsp.hemPwa(context, coerceIn(1, 600))
+fun Int.hemPwia(context: Context): Float = hemPwa(context)
+fun Int.wemLha(context: Context): Float = DimenSsp.wemLha(context, coerceIn(1, 600))
+fun Int.wemLhia(context: Context): Float = wemLha(context)
+fun Int.wemPha(context: Context): Float = DimenSsp.wemPha(context, coerceIn(1, 600))
+fun Int.wemPhia(context: Context): Float = wemPha(context)
 
 // EN Resource ID variants
 // PT Variantes que retornam o ID de recurso

@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.DisplaySettings
 import androidx.compose.material.icons.filled.FormatSize
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
+import com.appdimens.ssps.code.DimenSsp
 import com.appdimens.ssps.compose.*
 
 /**
@@ -50,6 +52,7 @@ class ExampleActivity : ComponentActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DimenSsp.warmupSspsFactors(applicationContext)
         setContent {
             MaterialTheme(colorScheme = lightColorScheme()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -155,8 +158,84 @@ fun AppDimensSspExampleScreen() {
 
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
-        // [EN] SECTION 4 — Facilitators (Rotate, Mode, Qualifier)
-        // [PT] SEÇÃO 4 — Facilitadores (Rotação, Modo, Qualificador)
+        // [EN] SECTION 4 — Aspect ratio (*.ssp vs *a)
+        // [PT] SEÇÃO 4 — Proporção (* sem *a vs *a)
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        item {
+            DemoCard(
+                title = "Aspect Ratio (with vs without)",
+                icon = Icons.Filled.AspectRatio,
+                description = "Variants ending in «a» (sspa, hspa, wspa, sema) apply the same geometry " +
+                    "multiplier as appdimens-dynamic — shown here at the same nominal size. " +
+                    "On ratios near ~1.78:16:9 values can look identical."
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = "Without AR",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "32.ssp → ${32.ssp.value}sp",
+                            fontSize = 32.ssp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "22.hsp → ${22.hsp.value}sp",
+                            fontSize = 22.hsp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "22.wsp → ${22.wsp.value}sp",
+                            fontSize = 22.wsp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "16.sem → ${16.sem.value}sp",
+                            fontSize = 16.sem,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = "With AR (*a)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "32.sspa → ${32.sspa.value}sp",
+                            fontSize = 32.sspa,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "22.hspa → ${22.hspa.value}sp",
+                            fontSize = 22.hspa,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "22.wspa → ${22.wspa.value}sp",
+                            fontSize = 22.wspa,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "16.sema → ${16.sema.value}sp",
+                            fontSize = 16.sema,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
+
+        // [EN] ---------------------------------------------------------------
+        // [PT] ---------------------------------------------------------------
+        // [EN] SECTION 5 — Facilitators (Rotate, Mode, Qualifier)
+        // [PT] SEÇÃO 5 — Facilitadores (Rotação, Modo, Qualificador)
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
         item {
@@ -189,8 +268,8 @@ fun AppDimensSspExampleScreen() {
 
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
-        // [EN] SECTION 5 — Conditional Scaling (ScaledSp)
-        // [PT] SEÇÃO 5 — Escala Condicional (ScaledSp)
+        // [EN] SECTION 6 — Conditional Scaling (ScaledSp)
+        // [PT] SEÇÃO 6 — Escala Condicional (ScaledSp)
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
         item {
@@ -215,8 +294,8 @@ fun AppDimensSspExampleScreen() {
 
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
-        // [EN] SECTION 3 — Visual Comparison
-        // [PT] SEÇÃO 3 — Comparação Visual
+        // [EN] SECTION 7 — Visual Comparison
+        // [PT] SEÇÃO 7 — Comparação Visual
         // [EN] ---------------------------------------------------------------
         // [PT] ---------------------------------------------------------------
         item {

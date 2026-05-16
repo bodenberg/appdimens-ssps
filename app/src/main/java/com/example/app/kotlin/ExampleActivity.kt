@@ -22,6 +22,8 @@ class ExampleActivity : AppCompatActivity() {
         binding = ActivitySspBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        DimenSsp.warmupSspsFactors(applicationContext)
+
         // EN Direct usage by code (Extensions)
         // PT Uso direto via código (Extensões)
         val sspValue = 16.ssp(this)
@@ -36,6 +38,16 @@ class ExampleActivity : AppCompatActivity() {
         // EN Without Font Scale
         // PT Sem Escala de Fonte
         val semValue = 16.sem(this)
+
+        // EN Aspect ratio vs base (pixels after resource + font scale; *a applies geometry multiplier)
+        // PT Aspect ratio vs base (pixels após recurso + escala de fonte; *a aplica multiplicador geométrico)
+        val compareSspPx = 32.ssp(this)
+        val compareSspaPx = 32.sspa(this)
+        Log.d(
+            "AppDimensSsp",
+            "AR compare 32.ssp(px)=$compareSspPx 32.sspa(px)=$compareSspaPx " +
+                    "22.hsp(px)=${22.hsp(this)} 22.hspa(px)=${22.hspa(this)}",
+        )
 
         // EN Facilitators
         // PT Facilitadores

@@ -29,9 +29,11 @@ import android.content.Context
 import android.content.res.Configuration
 import android.util.TypedValue
 import com.appdimens.ssps.common.DpQualifier
+import com.appdimens.ssps.common.effectiveDpQualifier
 import com.appdimens.ssps.common.Inverter
 import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
+import com.appdimens.ssps.core.AppDimensSspsFactors
 import kotlin.math.abs
 
 /**
@@ -73,7 +75,8 @@ object DimenSsp {
         dpQualifier: DpQualifier,
         value: Int,
         inverter: Inverter = Inverter.DEFAULT,
-        fontScale: Boolean = true
+        fontScale: Boolean = true,
+        applyAspectRatio: Boolean = false,
     ): Float {
         if (value == 0) return 0f
         require(value in MIN_VALUE..MAX_VALUE) {
@@ -82,9 +85,15 @@ object DimenSsp {
         val resourceId = getResourceId(context, dpQualifier, value, inverter)
         if (resourceId == 0) return 0f
 
-        // EN Gets the raw dp value from the resource and converts to sp pixels.
-        // PT Obtém o valor dp bruto do recurso e converte para pixels sp.
-        val dpValue = context.resources.getDimension(resourceId) / context.resources.displayMetrics.density
+        // EN Same intermediate as Compose: scaled dimen px / density, then optionally AR, then SP px.
+        // PT Mesmo intermédio que o Compose: px do dimen / density, opcionalmente AR, depois px SP.
+        val density = context.resources.displayMetrics.density
+        var dpValue = context.resources.getDimension(resourceId) / density
+        if (applyAspectRatio) {
+            AppDimensSspsFactors.ensureUpToDate(context)
+            val eq = effectiveDpQualifier(context.resources.configuration, dpQualifier, inverter)
+            dpValue *= AppDimensSspsFactors.adjustmentForQualifier(eq)
+        }
         val metrics = context.resources.displayMetrics
         return if (fontScale) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, dpValue, metrics)
@@ -121,23 +130,8 @@ object DimenSsp {
     ): Int {
         if (value == 0) return 0
 
-        val configuration = context.resources.configuration
-        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
-        var actualQualifier = dpQualifier
-
-        when (inverter) {
-            Inverter.PH_TO_LW -> if (isLandscape && dpQualifier == DpQualifier.HEIGHT) actualQualifier = DpQualifier.WIDTH
-            Inverter.PW_TO_LH -> if (isLandscape && dpQualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
-            Inverter.LH_TO_PW -> if (isPortrait && dpQualifier == DpQualifier.HEIGHT) actualQualifier = DpQualifier.WIDTH
-            Inverter.LW_TO_PH -> if (isPortrait && dpQualifier == DpQualifier.WIDTH) actualQualifier = DpQualifier.HEIGHT
-            Inverter.SW_TO_LH -> if (isLandscape && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.HEIGHT
-            Inverter.SW_TO_LW -> if (isLandscape && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.WIDTH
-            Inverter.SW_TO_PH -> if (isPortrait && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.HEIGHT
-            Inverter.SW_TO_PW -> if (isPortrait && dpQualifier == DpQualifier.SMALL_WIDTH) actualQualifier = DpQualifier.WIDTH
-            Inverter.DEFAULT -> {}
-        }
+        val actualQualifier =
+            effectiveDpQualifier(context.resources.configuration, dpQualifier, inverter)
 
         val safeValue = value.coerceIn(MIN_VALUE, MAX_VALUE)
         // EN Reuses DP resource naming convention: _Nssp, _Nhsp, _Nwsp.
@@ -242,6 +236,86 @@ object DimenSsp {
     fun wspPh(context: Context, value: Int): Float =
         getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH)
 
+    @JvmStatic
+    fun warmupSspsFactors(context: Context): Unit = AppDimensSspsFactors.warmup(context)
+
+    @JvmStatic
+    fun sspa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, applyAspectRatio = true)
+
+    @JvmStatic
+    fun sspia(context: Context, value: Int): Float = sspa(context, value)
+
+    @JvmStatic
+    fun sspPha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PH, applyAspectRatio = true)
+
+    @JvmStatic
+    fun sspPhia(context: Context, value: Int): Float = sspPha(context, value)
+
+    @JvmStatic
+    fun sspLha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LH, applyAspectRatio = true)
+
+    @JvmStatic
+    fun sspLhia(context: Context, value: Int): Float = sspLha(context, value)
+
+    @JvmStatic
+    fun sspPwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PW, applyAspectRatio = true)
+
+    @JvmStatic
+    fun sspPwia(context: Context, value: Int): Float = sspPwa(context, value)
+
+    @JvmStatic
+    fun sspLwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LW, applyAspectRatio = true)
+
+    @JvmStatic
+    fun sspLwia(context: Context, value: Int): Float = sspLwa(context, value)
+
+    @JvmStatic
+    fun hspa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, applyAspectRatio = true)
+
+    @JvmStatic
+    fun hspia(context: Context, value: Int): Float = hspa(context, value)
+
+    @JvmStatic
+    fun hspLwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.PH_TO_LW, applyAspectRatio = true)
+
+    @JvmStatic
+    fun hspLwia(context: Context, value: Int): Float = hspLwa(context, value)
+
+    @JvmStatic
+    fun hspPwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.LH_TO_PW, applyAspectRatio = true)
+
+    @JvmStatic
+    fun hspPwia(context: Context, value: Int): Float = hspPwa(context, value)
+
+    @JvmStatic
+    fun wspa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, applyAspectRatio = true)
+
+    @JvmStatic
+    fun wspia(context: Context, value: Int): Float = wspa(context, value)
+
+    @JvmStatic
+    fun wspLha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.PW_TO_LH, applyAspectRatio = true)
+
+    @JvmStatic
+    fun wspLhia(context: Context, value: Int): Float = wspLha(context, value)
+
+    @JvmStatic
+    fun wspPha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH, applyAspectRatio = true)
+
+    @JvmStatic
+    fun wspPhia(context: Context, value: Int): Float = wspPha(context, value)
+
     // EN WITHOUT FONT SCALE variants (sem escala de fonte).
     // PT Variantes SEM ESCALA DE FONTE.
 
@@ -299,6 +373,83 @@ object DimenSsp {
     @JvmStatic
     fun wemPh(context: Context, value: Int): Float =
         getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH, fontScale = false)
+
+    @JvmStatic
+    fun sema(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun semia(context: Context, value: Int): Float = sema(context, value)
+
+    @JvmStatic
+    fun semPha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PH, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun semPhia(context: Context, value: Int): Float = semPha(context, value)
+
+    @JvmStatic
+    fun semLha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LH, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun semLhia(context: Context, value: Int): Float = semLha(context, value)
+
+    @JvmStatic
+    fun semPwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_PW, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun semPwia(context: Context, value: Int): Float = semPwa(context, value)
+
+    @JvmStatic
+    fun semLwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.SMALL_WIDTH, value, Inverter.SW_TO_LW, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun semLwia(context: Context, value: Int): Float = semLwa(context, value)
+
+    @JvmStatic
+    fun hema(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun hemia(context: Context, value: Int): Float = hema(context, value)
+
+    @JvmStatic
+    fun hemLwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.PH_TO_LW, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun hemLwia(context: Context, value: Int): Float = hemLwa(context, value)
+
+    @JvmStatic
+    fun hemPwa(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.HEIGHT, value, Inverter.LH_TO_PW, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun hemPwia(context: Context, value: Int): Float = hemPwa(context, value)
+
+    @JvmStatic
+    fun wema(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun wemia(context: Context, value: Int): Float = wema(context, value)
+
+    @JvmStatic
+    fun wemLha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.PW_TO_LH, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun wemLhia(context: Context, value: Int): Float = wemLha(context, value)
+
+    @JvmStatic
+    fun wemPha(context: Context, value: Int): Float =
+        getDimensionInSpPx(context, DpQualifier.WIDTH, value, Inverter.LW_TO_PH, fontScale = false, applyAspectRatio = true)
+
+    @JvmStatic
+    fun wemPhia(context: Context, value: Int): Float = wemPha(context, value)
 
     // EN Resource ID variants.
     // PT Variantes de ID de recurso.

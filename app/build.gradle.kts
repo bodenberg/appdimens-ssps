@@ -42,9 +42,9 @@ android {
 dependencies {
     api(project(":library"))
 
-    //implementation("io.github.bodenberg:appdimens-ssps:3.0.0")
+    //implementation("io.github.bodenberg:appdimens-ssps:3.1.5")
     // or
-    //implementation("com.github.bodenberg.appdimens:appdimens-ssps:3.0.0")
+    //implementation("com.github.bodenberg.appdimens:appdimens-ssps:3.1.5")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

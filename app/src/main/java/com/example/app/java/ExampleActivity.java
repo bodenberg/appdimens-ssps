@@ -29,6 +29,8 @@ public class ExampleActivity extends AppCompatActivity {
         binding = ActivitySspBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        DimenSsp.warmupSspsFactors(this);
+
         // EN Direct resolution (Static methods for Java)
         // PT Resolução direta (Métodos estáticos para Java)
         float sspValue = DimenSsp.ssp(this, 16);
@@ -43,6 +45,13 @@ public class ExampleActivity extends AppCompatActivity {
         // EN Without Font Scale
         // PT Sem Escala de Fonte
         float semValue = DimenSsp.sem(this, 16);
+
+        float compareSspPx = DimenSsp.ssp(this, 32);
+        float compareSspaPx = DimenSsp.sspa(this, 32);
+        float compareHspPx = DimenSsp.hsp(this, 22);
+        float compareHspaPx = DimenSsp.hspa(this, 22);
+        Log.d("AppDimensSspJava", "AR compare 32.ssp(px)=" + compareSspPx + " 32.sspa(px)=" + compareSspaPx
+                + " 22.hsp(px)=" + compareHspPx + " 22.hspa(px)=" + compareHspaPx);
 
         // EN Facilitators
         // PT Facilitadores
