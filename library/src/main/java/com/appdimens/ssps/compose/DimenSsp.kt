@@ -329,13 +329,18 @@ val Int.wspPhPx: Float get() = LocalDensity.current.run { wspPh.toPx() }
 val Int.sspa: TextUnit get() = toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, applyAspectRatio = true)
 
 @get:Composable
-val Int.sspPxa: Float get() = LocalDensity.current.run { sspa.toPx() }
+val Int.sspPxA: Float get() = LocalDensity.current.run { sspa.toPx() }
+
+/** @deprecated Prefer [sspPxA] (same casing as appdimens-sdps). */
+@Deprecated("Use sspPxA", ReplaceWith("sspPxA"))
+@get:Composable
+val Int.sspPxa: Float get() = sspPxA
 
 @get:Composable
 val Int.sspia: TextUnit get() = sspa
 
 @get:Composable
-val Int.sspPxIa: Float get() = sspPxa
+val Int.sspPxIa: Float get() = sspPxA
 
 @get:Composable
 val Int.sspPha: TextUnit get() = toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, inverter = Inverter.SW_TO_PH, applyAspectRatio = true)
