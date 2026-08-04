@@ -94,22 +94,24 @@ object DimenSsp {
 
         // EN Missing resource → unscaled Sp (parity with Compose `toDynamicScaledSp` fallback).
         // PT Recurso ausente → Sp sem escala XML (paridade com o fallback Compose).
-        var dpValue = if (resourceId != 0) {
+        val dpValue = if (resourceId != 0) {
             context.resources.getDimension(resourceId) / metrics.density
         } else {
             value.toFloat()
         }
-        if (applyAspectRatio) {
-            AppDimensSspsFactors.ensureUpToDate(context)
-            dpValue *= AppDimensSspsFactors.adjustmentForQualifier(actualQualifier)
-        }
-        return if (fontScale) {
+
+        // EN Same order as appdimens-sdps `DimenSsp.getDimensionInSpPx`: Sp px first, then AR multiply.
+        // PT Mesma ordem do SDPS: px Sp primeiro, depois multiplicação AR.
+        val baseSpPx = if (fontScale) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, dpValue, metrics)
         } else {
             // EN Bypasses font scale using density directly.
             // PT Ignora a escala de fonte usando a densidade diretamente.
             dpValue * metrics.density
         }
+        if (!applyAspectRatio) return baseSpPx
+        AppDimensSspsFactors.ensureUpToDate(context)
+        return baseSpPx * AppDimensSspsFactors.adjustmentForQualifier(actualQualifier)
     }
 
     /**

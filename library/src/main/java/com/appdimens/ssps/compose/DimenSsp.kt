@@ -322,7 +322,8 @@ val Int.wspPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontSc
 @get:Composable
 val Int.wspPhPx: Float get() = LocalDensity.current.run { wspPh.toPx() }
 
-// Aspect-ratio-aware (font-scale on); parity with appdimens-sdps `sspa` / dynamic `sdpa`.
+// Aspect-ratio-aware (font-scale on); same maths as appdimens-sdps `sspa` / `sdpa`,
+// but resolves SSPS XML (`_Nssp` / `_Nhsp` / `_Nwsp`) instead of SDP buckets.
 
 @get:Composable
 val Int.sspa: TextUnit get() = toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, applyAspectRatio = true)
