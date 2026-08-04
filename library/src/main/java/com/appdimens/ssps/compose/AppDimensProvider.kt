@@ -1,9 +1,6 @@
 /**
- * Author & Developer: Jean Bodenberg
- * GIT: https://github.com/bodenberg/appdimens-ssps.git
- *
- * Optional CompositionLocal provider for UiModeType — avoids re-resolving fold /
- * WindowLayoutInfo on every `*Mode` / `*Screen` call when wrapped at the root.
+ * Optional CompositionLocal provider for [UiModeType].
+ * Wrap the UI root to reuse fold / WindowLayoutInfo resolution across facilitators.
  */
 package com.appdimens.ssps.compose
 
@@ -12,18 +9,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import com.appdimens.ssps.common.UiModeType
 
-/**
- * EN CompositionLocal for the current UiModeType.
- * PT CompositionLocal para o UiModeType atual.
- */
+/** CompositionLocal for the current [UiModeType]. */
 val LocalUiModeType = compositionLocalOf { UiModeType.UNDEFINED }
 
-/**
- * EN Provider that computes and provides [UiModeType] (including foldables) to children.
- * Recommended for performance when using many `*Mode` / `*Screen` facilitators.
- *
- * PT Provedor que computa e fornece o [UiModeType] (incl. dobráveis) aos filhos.
- */
+/** Provides [UiModeType] (including foldables) to the composition subtree. */
 @Composable
 fun AppDimensProvider(content: @Composable () -> Unit) {
     val uiModeType = rememberCurrentUiModeType()
@@ -32,10 +21,7 @@ fun AppDimensProvider(content: @Composable () -> Unit) {
     }
 }
 
-/**
- * EN Uses [LocalUiModeType] when provided; otherwise resolves via [rememberCurrentUiModeType].
- * PT Usa [LocalUiModeType] se fornecido; caso contrário resolve via [rememberCurrentUiModeType].
- */
+/** Returns [LocalUiModeType] when set; otherwise resolves via [rememberCurrentUiModeType]. */
 @Composable
 internal fun resolveCurrentUiModeType(): UiModeType {
     val provided = LocalUiModeType.current

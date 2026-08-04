@@ -1,11 +1,10 @@
 /**
- * Shared Compose resolve helpers for SSPS — parallel to appdimens-sdps `SdpsComposeResolve`,
- * but resolves `_Nssp` / `_Nhsp` / `_Nwsp` (typography) instead of SDP layout buckets.
+ * Compose helpers that resolve SSPS dimens with minimal CompositionLocal subscriptions.
  *
- * - DEFAULT inverter + no aspect-ratio: no [androidx.compose.ui.platform.LocalConfiguration] read
- *   ( [androidx.compose.ui.res.dimensionResource] already tracks resource configuration ).
- * - Inverters: subscribe only to `LocalConfiguration.orientation`.
- * - Aspect-ratio: subscribe only to sw/w/h/dpi fields used by [com.appdimens.ssps.core.AppDimensSspsFactors].
+ * Default paths avoid reading [androidx.compose.ui.platform.LocalConfiguration]
+ * ([androidx.compose.ui.res.dimensionResource] already tracks resource configuration).
+ * Inverters subscribe only to orientation. Aspect-ratio paths subscribe only to the
+ * screen metrics used by [com.appdimens.ssps.core.AppDimensSspsFactors].
  */
 package com.appdimens.ssps.compose
 
@@ -44,7 +43,7 @@ internal fun rememberSspResourceId(
     }
 }
 
-/** Builds `_Nssp` / `_Nhsp` / `_Nwsp` and resolves via [DimenResourceIdCache]. */
+/** Resolves `_Nssp` / `_Nhsp` / `_Nwsp` through [DimenResourceIdCache]. */
 internal fun resolveSspResourceId(
     context: Context,
     actualQualifier: DpQualifier,
@@ -65,8 +64,8 @@ internal fun resolveSspResourceId(
 }
 
 /**
- * Reads only AR-relevant configuration fields so remember keys ignore locale/uiMode noise
- * in the remembered adjustment (still requires a LocalConfiguration read to invalidate on size/dpi).
+ * Remembers the aspect-ratio adjustment for [actualQualifier], keyed by the
+ * configuration fields that affect [com.appdimens.ssps.core.AppDimensSspsFactors].
  */
 @Composable
 internal fun rememberAspectRatioAdjustment(actualQualifier: DpQualifier): Float {

@@ -1,9 +1,8 @@
 /**
- * Aspect-ratio adjustments for XML-pre-scaled SSP resources (same maths as appdimens-sdps /
- * appdimens-dynamic for screen geometry).
+ * Aspect-ratio adjustment factors for XML-pre-scaled SSP resources.
  *
- * B_q inferred from @_1ssp / @_1wsp / @_1hsp; recomputes on (smallestScreenWidthDp, screenWidthDp,
- * screenHeightDp, densityDpi) changes.
+ * Infers the active resource bucket from `_1ssp` / `_1wsp` / `_1hsp` and recomputes when
+ * `(smallestScreenWidthDp, screenWidthDp, screenHeightDp, densityDpi)` changes.
  */
 package com.appdimens.ssps.core
 

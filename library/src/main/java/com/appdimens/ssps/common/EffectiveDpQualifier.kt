@@ -1,8 +1,6 @@
 /**
- * Maps (orientation / Configuration, qualifier, inverter) to the effective SSP / hsp / wsp resource axis.
- *
- * Mirrors the inverter branching in [com.appdimens.ssps.code.DimenSsp.getResourceId].
- * Parallel to appdimens-sdps [effectiveDpQualifier], scoped to SSPS typography resources.
+ * Maps qualifier + inverter (+ orientation) to the effective SSP / HSP / WSP resource axis.
+ * Used by [com.appdimens.ssps.code.DimenSsp.getResourceId] and Compose resolve helpers.
  */
 package com.appdimens.ssps.common
 
@@ -15,9 +13,8 @@ internal fun effectiveDpQualifier(
 ): DpQualifier = effectiveDpQualifier(configuration.orientation, dpQualifier, inverter)
 
 /**
- * Orientation-only overload so Compose can subscribe to
- * [androidx.compose.ui.platform.LocalConfiguration]`.orientation` without depending on
- * unrelated configuration fields in remember keys.
+ * Orientation-only overload for Compose remember keys that must not depend on
+ * unrelated [Configuration] fields.
  */
 internal fun effectiveDpQualifier(
     orientation: Int,

@@ -123,8 +123,7 @@ class AppDimensSspsAspectRatioInstrumentedTest {
         assertEquals(first, second, epsilonSpPx)
         assertEquals(sizeAfterFirst, DimenResourceIdCache.cachedSizeForTestsOnly())
 
-        // EN Same XML name `_16ssp` — cache hit, no growth.
-        // PT Mesmo nome XML `_16ssp` — hit de cache, sem crescimento.
+        // Same resource name - cache size must not grow.
         DimenSsp.sspa(ctx, 16)
         assertEquals(sizeAfterFirst, DimenResourceIdCache.cachedSizeForTestsOnly())
     }

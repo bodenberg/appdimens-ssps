@@ -71,9 +71,9 @@ val heightToWidth = 50.hspLw
 val widthToHeight = 50.wspLh
 ```
 
-**Aspect-ratio aware (`sspa`, `hspa`, `wspa`, `sema`, `hema`, `wema`):** Applies the **same default aspect-ratio multiplier** as [`appdimens-dynamic`](https://github.com/bodenberg/appdimens) on top of the XML-resolved `@dimen` value — effectively **one extra multiply** (`finalPx = getDimension(sp px) × arAdjustment`). Examples: **`16.sspa`**, **`32.hspa`**, **`16.sema`** (Compose) and **`DimenSsp.sspa(ctx, 16)`** (code). The `*ia` names (`sspia`, `hemia`, …) exist for API parity with dynamic (multi-window “ignore scaling” paths there); with SSPS XML they **match** the corresponding `*a` APIs. Adjustment factors invalidate when **`(smallestScreenWidthDp, screenWidthDp, screenHeightDp, densityDpi)`** changes. Optional prefetch: **`DimenSsp.warmupSspsFactors(context)`**. Compose hot path (parallel to SDPS): DEFAULT `.ssp` avoids `LocalConfiguration`; inverters read orientation only; `*a` remembers sw/w/h/dpi. Numeric parity with **appdimens-dynamic** holds when Android selects the **same resource bucket** for `_1ssp` / `_1wsp` / `_1hsp` used in the maths.
+**Aspect-ratio aware (`sspa`, `hspa`, `wspa`, `sema`, `hema`, `wema`):** Applies an aspect-ratio adjustment on top of the XML-resolved `@dimen` value. Examples: **`16.sspa`**, **`32.hspa`**, **`16.sema`** (Compose) and **`DimenSsp.sspa(ctx, 16)`** (code). The `*ia` aliases (`sspia`, `hemia`, …) match the corresponding `*a` APIs. Factors update when **`(smallestScreenWidthDp, screenWidthDp, screenHeightDp, densityDpi)`** change. Optional prefetch: **`DimenSsp.warmupSspsFactors(context)`**.
 
-**Sample app:** the included **`app`** module demonstrates aspect ratio in Compose: open **`ExampleActivity`** (package `com.example.app.compose`) — the **Aspect Ratio (with vs without)** card compares **`ssp` / `hsp` / `wsp` / `sem`** next to **`sspa` / `hspa` / `wspa` / `sema`** at the same nominal sizes. The Kotlin and Java sample activities call **`DimenSsp.warmupSspsFactors`** and log **`AR compare`** lines (pixel values) for `ssp` vs `sspa` and `hsp` vs `hspa`. Instrumented coverage lives in **`AppDimensSspsAspectRatioInstrumentedTest`** in the library.
+**Sample app:** the **`app`** module compares **`ssp` / `hsp` / `wsp` / `sem`** with **`sspa` / `hspa` / `wspa` / `sema`** in Compose (`com.example.app.compose.ExampleActivity`). Kotlin and Java samples call **`DimenSsp.warmupSspsFactors`**. Instrumented coverage: **`AppDimensSspsAspectRatioInstrumentedTest`**.
 
 **Facilitators — Quick Conditional Overrides:**
 ```kotlin
@@ -246,7 +246,7 @@ float result = scaled.ssp(context);
 | Feature | Description |
 |---------|-------------|
 | **Triple Axis Scaling** | Full support for SSP (Smallest Width), HSP (Height), and WSP (Width) |
-| **Aspect ratio (`*a` variants)** | `sspa`, `hspa`, `wspa`, `sema`, `hema`, `wema` (+ inverters): geometry multiplier aligned with **appdimens-dynamic**; optional **`DimenSsp.warmupSspsFactors`**. Demonstrated side-by-side in the sample **`app`** Compose demo. |
+| **Aspect ratio (`*a` variants)** | `sspa`, `hspa`, `wspa`, `sema`, `hema`, `wema` (+ inverters): aspect-ratio adjustment on top of XML-resolved sizes; optional **`DimenSsp.warmupSspsFactors`**. |
 | **Accessibility Control** | SEM, HEM, WEM variants to ignore system font scale when necessary |
 | **Code-Level API** | Full `DimenSsp` object for Java & Kotlin — resolve text sizes outside of XML and Compose |
 | **Inverter Shortcuts** | `.sspPh`, `.sspLw`, `.hspPw`, `.wspLh`, etc. — orientation-aware switching |

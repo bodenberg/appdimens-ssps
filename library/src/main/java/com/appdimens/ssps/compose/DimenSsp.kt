@@ -316,8 +316,7 @@ val Int.wspPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontSc
 @get:Composable
 val Int.wspPhPx: Float get() = LocalDensity.current.run { wspPh.toPx() }
 
-// Aspect-ratio-aware (font-scale on); same maths as appdimens-sdps `sspa` / `sdpa`,
-// but resolves SSPS XML (`_Nssp` / `_Nhsp` / `_Nwsp`) instead of SDP buckets.
+// Aspect-ratio-aware variants (respect system font scale).
 
 @get:Composable
 val Int.sspa: TextUnit get() = toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = true, applyAspectRatio = true)
@@ -325,7 +324,7 @@ val Int.sspa: TextUnit get() = toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontSc
 @get:Composable
 val Int.sspPxA: Float get() = LocalDensity.current.run { sspa.toPx() }
 
-/** @deprecated Prefer [sspPxA] (same casing as appdimens-sdps). */
+/** @deprecated Use [sspPxA]. */
 @Deprecated("Use sspPxA", ReplaceWith("sspPxA"))
 @get:Composable
 val Int.sspPxa: Float get() = sspPxA
@@ -713,7 +712,7 @@ val Int.wemPh: TextUnit get() = this.toDynamicScaledSp(DpQualifier.WIDTH, fontSc
 @get:Composable
 val Int.wemPhPx: Float get() = LocalDensity.current.run { wemPh.toPx() }
 
-// Aspect-ratio-aware without Compose font multiplication (parity with sem/hem/wem + adjustment in code).
+// Aspect-ratio-aware variants that ignore system font scale.
 
 @get:Composable
 val Int.sema: TextUnit get() = toDynamicScaledSp(DpQualifier.SMALL_WIDTH, fontScale = false, applyAspectRatio = true)
@@ -847,20 +846,16 @@ val Int.wemPhia: TextUnit get() = wemPha
 @get:Composable
 val Int.wemPxPhia: Float get() = wemPxPha
 
-// EN Dynamic scaling for Sp from SSPS XML (`_Nssp` / `_Nhsp` / `_Nwsp`).
-// PT Dimensionamento dinâmico Sp a partir dos XML SSPS.
+// Dynamic scaling from SSPS XML (`_Nssp` / `_Nhsp` / `_Nwsp`).
 
 /**
- * EN
- * Converts an Int (base Sp) into a dynamically scaled [TextUnit].
- * Parallel to appdimens-sdps `toDynamicScaledSp` / `sspa` hot path: DEFAULT avoids
- * [androidx.compose.ui.platform.LocalConfiguration]; inverters subscribe to orientation only;
- * `*a` remembers sw/w/h/dpi; `LocalDensity` only when [fontScale] is false.
- * Resolves SSPS typography buckets (not SDP layout dimens).
+ * Converts an Int base value into a scaled [TextUnit] (Sp) from SSPS XML resources
+ * (`_Nssp` / `_Nhsp` / `_Nwsp`).
  *
- * PT
- * Converte Int (Sp base) em [TextUnit] escalado — paridade de hot path com SDPS,
- * usando recursos SSPS (`_Nssp` / `_Nhsp` / `_Nwsp`).
+ * @param qualifier Screen axis used to select the resource family.
+ * @param fontScale When false, strips the system font scale (`sem` / `hem` / `wem` paths).
+ * @param inverter Optional orientation-based axis swap.
+ * @param applyAspectRatio When true, multiplies by the cached aspect-ratio adjustment.
  */
 @SuppressLint("LocalContextResourcesRead", "DiscouragedApi")
 @Composable
@@ -888,8 +883,7 @@ fun Int.toDynamicScaledSp(
     return if (fontScale) {
         dpValue.sp
     } else {
-        // EN Bypass font scale: only this branch subscribes to LocalDensity.
-        // PT Ignora escala de fonte: só este ramo assina LocalDensity.
+        // Strip system font scale (subscribes to LocalDensity only here).
         (dpValue / LocalDensity.current.fontScale).sp
     }
 }

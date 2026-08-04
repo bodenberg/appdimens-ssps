@@ -39,14 +39,12 @@ import kotlin.math.abs
 
 /**
  * EN
- * Utility object for handling SSP (Scalable Sp) dimensions from code (non-Compose).
- * Resolves SSPS XML resources (`_Nssp`, `_Nhsp`, `_Nwsp`) — same role as SDPS `sspa`/`ssp`,
- * but focused on typography buckets rather than SDP layout dimens.
+ * Code API for SSP / HSP / WSP dimensions (non-Compose).
+ * Resolves XML resources `_Nssp`, `_Nhsp`, and `_Nwsp`.
  *
  * PT
- * Objeto utilitário para dimensões SSP (Sp escalável) a partir de código (não-Compose).
- * Resolve recursos XML SSPS (`_Nssp`, `_Nhsp`, `_Nwsp`) — mesmo papel do SDPS `sspa`/`ssp`,
- * focado em tipografia em vez dos dimens de layout SDP.
+ * API de código para dimensões SSP / HSP / WSP (não-Compose).
+ * Resolve os recursos XML `_Nssp`, `_Nhsp` e `_Nwsp`.
  */
 object DimenSsp {
     private const val MIN_VALUE = 1
@@ -54,14 +52,14 @@ object DimenSsp {
 
     /**
      * EN
-     * Gets the dimension in pixels (Sp) from an SSP value.
-     * Reads the DP XML resource and converts it to Sp pixels, respecting or ignoring the system font scale.
-     * Optionally applies the same aspect-ratio multiplier as Compose `sspa`.
+     * Returns the dimension in Sp pixels for an SSP value.
+     * Reads the matching XML resource and converts to Sp pixels, optionally applying
+     * aspect-ratio adjustment and optionally ignoring system font scale.
      *
      * PT
-     * Obtém a dimensão em pixels (Sp) a partir de um valor SSP.
-     * Lê o recurso XML de DP e converte para pixels Sp, respeitando ou ignorando a escala de fonte.
-     * Opcionalmente aplica o mesmo multiplicador de aspect ratio do Compose `sspa`.
+     * Retorna a dimensão em pixels Sp para um valor SSP.
+     * Lê o recurso XML correspondente e converte para pixels Sp, com ajuste de
+     * aspect ratio e escala de fonte opcionais.
      *
      * @param context The application context.
      * @param dpQualifier DpQualifier (SMALL_WIDTH, HEIGHT, WIDTH).
@@ -87,26 +85,21 @@ object DimenSsp {
         }
         val configuration = context.resources.configuration
         val actualQualifier = effectiveDpQualifier(configuration, dpQualifier, inverter)
-        // EN Resolve once with the already-computed qualifier (avoid double inverter + getIdentifier).
-        // PT Resolve uma vez com o qualificador já calculado (evita inverter + getIdentifier duplicados).
+        // Resolve with the already-computed effective qualifier.
         val resourceId = resolveResourceId(context, actualQualifier, value)
         val metrics = context.resources.displayMetrics
 
-        // EN Missing resource → unscaled Sp (parity with Compose `toDynamicScaledSp` fallback).
-        // PT Recurso ausente → Sp sem escala XML (paridade com o fallback Compose).
+        // Missing resource: fall back to an unscaled Sp value.
         val dpValue = if (resourceId != 0) {
             context.resources.getDimension(resourceId) / metrics.density
         } else {
             value.toFloat()
         }
 
-        // EN Same order as appdimens-sdps `DimenSsp.getDimensionInSpPx`: Sp px first, then AR multiply.
-        // PT Mesma ordem do SDPS: px Sp primeiro, depois multiplicação AR.
         val baseSpPx = if (fontScale) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, dpValue, metrics)
         } else {
-            // EN Bypasses font scale using density directly.
-            // PT Ignora a escala de fonte usando a densidade diretamente.
+            // Ignore system font scale.
             dpValue * metrics.density
         }
         if (!applyAspectRatio) return baseSpPx
@@ -141,7 +134,7 @@ object DimenSsp {
         return resolveResourceId(context, actualQualifier, value)
     }
 
-    /** EN Builds `_Nssp` / `_Nhsp` / `_Nwsp` and resolves via [DimenResourceIdCache]. PT Monta o nome e resolve via cache. */
+    /** Builds `_Nssp` / `_Nhsp` / `_Nwsp` and resolves via [DimenResourceIdCache]. */
     private fun resolveResourceId(context: Context, actualQualifier: DpQualifier, value: Int): Int {
         val safeValue = value.coerceIn(MIN_VALUE, MAX_VALUE)
         val suffix = when (actualQualifier) {

@@ -8,12 +8,12 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.bodenberg</groupId>
-  <artifactId>appdimens-sdps</artifactId>
+  <artifactId>appdimens-ssps</artifactId>
   <version>3.1.6</version>
   <packaging>aar</packaging>
-  <name>AppDimens SDP, HDP, WDP: Scalable Width and Height Dimensions</name>
-  <description>An extension of AppDimens that implements the SDP (Scaled Density Pixels) standard for widths and heights. It automatically generates pre-calculated @dimen resources, ensuring that layout dimensions (Dp) scale consistently across different screen sizes. Perfect for direct use in traditional XML layouts and Composables. android, kotlin, java, jetpack-compose, xml, swift, swiftui, ios, dp, sp, sdp, ssp, dimensions, responsive, layout, design-system, adaptive, dynamic, fixed, view-system</description>
-  <url>https://github.com/bodenberg/appdimens-sdps</url>
+  <name>AppDimens SSP, HSP, WSP: Scalable Width and Height Dimensions (Responsive Layouts)</name>
+  <description>AppDimens SSP, HSP, WSP is a modern dimension management system exclusively for typography and fonts (SP) on Android. (dimens, dimension, dimensions, dp, sp, dimen, text unit, font scale, font size, responsive, adaptative, resize, textunit, mm, cm, inch, device, physical, android, dpi, sdpi, hdpi, mdpi, ldpi, precision, absolute, layout, typeface)</description>
+  <url>https://github.com/bodenberg/appdimens-ssps</url>
   <inceptionYear>2025</inceptionYear>
   <licenses>
     <license>
@@ -30,9 +30,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:github.com/bodenberg/appdimens-sdps.git</connection>
-    <developerConnection>scm:git:ssh://github.com/bodenberg/appdimens-sdps.git</developerConnection>
-    <url>https://github.com/bodenberg/appdimens-sdps</url>
+    <connection>scm:git:github.com/bodenberg/appdimens-ssps.git</connection>
+    <developerConnection>scm:git:ssh://github.com/bodenberg/appdimens-ssps.git</developerConnection>
+    <url>https://github.com/bodenberg/appdimens-ssps</url>
   </scm>
   <dependencyManagement>
     <dependencies>

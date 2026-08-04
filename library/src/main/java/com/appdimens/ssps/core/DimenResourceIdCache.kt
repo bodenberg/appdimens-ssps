@@ -1,9 +1,8 @@
 /**
- * Shared cache for [android.content.res.Resources.getIdentifier] lookups.
+ * Process-wide cache for [android.content.res.Resources.getIdentifier] lookups.
  *
- * Resource IDs for a given `(packageName, dimenName)` are stable for the process lifetime;
- * configuration only changes the *value* returned by [android.content.res.Resources.getDimension],
- * not the ID. Caching avoids the expensive name→id scan on every `.ssp` / Compose resolve.
+ * IDs for a given `(packageName, dimenName)` are stable for the process lifetime;
+ * configuration changes the value from [android.content.res.Resources.getDimension], not the ID.
  */
 package com.appdimens.ssps.core
 
@@ -23,8 +22,7 @@ object DimenResourceIdCache {
         val key = buildKey(packageName, dimenName)
         idByPackageAndName[key]?.let { return it }
         val id = resources.getIdentifier(dimenName, DIMEN_TYPE, packageName)
-        // EN Cache misses (0) too — avoids repeated failed scans for out-of-range / typos.
-        // PT Também cacheia misses (0) — evita scans repetidos para valores ausentes.
+        // Cache misses (id == 0) to avoid repeating failed lookups.
         val raced = idByPackageAndName.putIfAbsent(key, id)
         return raced ?: id
     }

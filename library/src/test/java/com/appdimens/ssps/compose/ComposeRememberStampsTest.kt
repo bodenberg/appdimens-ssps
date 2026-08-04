@@ -6,10 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
-/**
- * Unit tests for Compose remember stamps — mirrors appdimens-dynamic ComposeRememberStampsTest
- * (dpi/height collision and fontScale isolation).
- */
+/** Unit tests for Compose remember stamp packing. */
 class ComposeRememberStampsTest {
 
     private fun config(
