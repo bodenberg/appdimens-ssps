@@ -859,21 +859,18 @@ val Int.wemPxPhia: Float get() = wemPxPha
 /**
  * EN
  * Converts an Int (the base Sp value) into a dynamically scaled TextUnit (Sp).
- * 1. Constructs the resource name based on the value and the qualifier (e.g., `_16ssp`).
- * 2. Loads the dimension value in dp from that resource.
- * 3. Converts it to Sp, optionally stripping the system font scale.
+ * Same behaviour as appdimens-sdps `toDynamicScaledSp` / `sspa`, but resolves SSPS
+ * XML (`_Nssp` / `_Nhsp` / `_Nwsp`) instead of SDP buckets.
+ *
+ * 1. Builds the resource name (e.g. `_16ssp`).
+ * 2. Loads the dimen value and treats it as Sp.
+ * 3. Optionally strips system font scale; optionally applies aspect-ratio (`*a`).
  *
  * PT
- * Converte um Int (o valor Sp base) em um TextUnit (Sp) escalado dinamicamente.
- * Esta função reutiliza os recursos XML de DP existentes (`_Nsdp`, `_Nhdp`, `_Nwdp`) como
- * valores de dimensão, convertendo-os para Sp. O sistema de escalonamento é o mesmo do DP —
- * o valor dp bruto do recurso é usado diretamente como número sp.
+ * Converte um Int (Sp base) em TextUnit (Sp) escalado — paridade com SDPS `sspa`,
+ * usando recursos SSPS (`_Nssp` / `_Nhsp` / `_Nwsp`).
  *
- * 1. Constrói o nome do recurso baseado no valor e no qualificador (ex: `_16ssp`).
- * 2. Carrega o valor de dimensão em dp daquele recurso.
- * 3. Converte para Sp, opcionalmente removendo a escala de fonte do sistema.
- *
- * @param qualifier The screen qualifier used to determine the resource name (sdp, hdp, wdp).
+ * @param qualifier The screen qualifier used to determine the resource name (ssp, hsp, wsp).
  * @param fontScale Whether to respect the user's font scale setting.
  * @param inverter Inverter to swap qualifier when orientation changes.
  * @return The TextUnit (Sp) value loaded from the resource, or the base sp value as fallback.
@@ -895,8 +892,8 @@ fun Int.toDynamicScaledSp(
     val density = LocalDensity.current
     val actualQualifier = effectiveDpQualifier(configuration, qualifier, inverter)
 
-    // EN Reuses the existing DP XML resource naming convention: _Nssp, _Nhsp, _Nwsp.
-    // PT Reutiliza a convenção de nomenclatura dos recursos XML de DP: _Nssp, _Nhsp, _Nwsp.
+    // EN SSPS XML naming: _Nssp, _Nhsp, _Nwsp (SDPS SSP path uses _Nsdp because it embeds SDP).
+    // PT Nomenclatura SSPS: _Nssp, _Nhsp, _Nwsp (no SDPS o SSP embutido usa _Nsdp).
     val suffix =
         when (actualQualifier) {
             DpQualifier.HEIGHT -> "hsp"

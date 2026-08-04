@@ -40,13 +40,13 @@ import kotlin.math.abs
 /**
  * EN
  * Utility object for handling SSP (Scalable Sp) dimensions from code (non-Compose).
- * Reuses the existing XML DP resources (`_Nssp`, `_Nhsp`, `_Nwsp`) and converts
- * the resulting Dp value to a Sp (pixels) value, respecting or ignoring the system font scale.
+ * Resolves SSPS XML resources (`_Nssp`, `_Nhsp`, `_Nwsp`) — same role as SDPS `sspa`/`ssp`,
+ * but focused on typography buckets rather than SDP layout dimens.
  *
  * PT
- * Objeto utilitário para manipulação de dimensões SSP (Sp escalável) a partir de código (não-Compose).
- * Reutiliza os recursos XML de DP existentes (`_Nssp`, `_Nhsp`, `_Nwsp`) e converte
- * o valor Dp resultante para um valor Sp (pixels), respeitando ou ignorando a escala de fonte.
+ * Objeto utilitário para dimensões SSP (Sp escalável) a partir de código (não-Compose).
+ * Resolve recursos XML SSPS (`_Nssp`, `_Nhsp`, `_Nwsp`) — mesmo papel do SDPS `sspa`/`ssp`,
+ * focado em tipografia em vez dos dimens de layout SDP.
  */
 object DimenSsp {
     private const val MIN_VALUE = 1
@@ -116,12 +116,10 @@ object DimenSsp {
 
     /**
      * EN
-     * Gets the resource ID for an SSP value (delegates to DP resource naming).
-     * The SP system reuses the same DP XML resources.
+     * Gets the resource ID for an SSP value (`_Nssp` / `_Nhsp` / `_Nwsp`).
      *
      * PT
-     * Obtém o ID do recurso para um valor SSP (delega para a nomenclatura do recurso DP).
-     * O sistema SP reutiliza os mesmos recursos XML de DP.
+     * Obtém o ID do recurso para um valor SSP (`_Nssp` / `_Nhsp` / `_Nwsp`).
      *
      * @param context The application context.
      * @param dpQualifier DpQualifier.
