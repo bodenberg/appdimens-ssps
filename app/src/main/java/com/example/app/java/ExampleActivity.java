@@ -1,6 +1,6 @@
 /**
  * @author Bodenberg
- * GIT: https://github.com/bodenberg/appdimens-sdps.git
+ * GIT: https://github.com/bodenberg/appdimens-ssps.git
  */
 package com.example.app.java;
 

@@ -25,19 +25,13 @@
 package com.appdimens.ssps.compose
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.TextUnit
-import androidx.window.layout.FoldingFeature
-import androidx.window.layout.WindowInfoTracker
 import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.DpQualifierEntry
 import com.appdimens.ssps.common.Inverter
@@ -93,14 +87,6 @@ fun TextUnit.scaledSp(): ScaledSp = ScaledSp(this.value.toInt())
  */
 @Composable
 fun Int.scaledSp(): ScaledSp = ScaledSp(this)
-
-// EN Helps extract the activity from context wrapper (ScaledSp version)
-// PT Ajuda a extrair a activity de um context wrapper (versão ScaledSp)
-private tailrec fun android.content.Context.findActivityScaledSp(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivityScaledSp()
-    else -> null
-}
 
 /**
  * EN
@@ -239,42 +225,34 @@ class ScaledSp private constructor(
     @SuppressLint("ConfigurationScreenWidthHeight")
     @Composable
     private fun resolve(qualifier: DpQualifier): TextUnit {
-        val context = LocalContext.current
         val configuration = LocalConfiguration.current
-
-        val activity = context.findActivityScaledSp()
-        val windowLayoutInfo = remember(activity) {
-            activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-        }?.collectAsState(initial = null)
-
-        val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-            ?.filterIsInstance<FoldingFeature>()
-            ?.firstOrNull()
-
-        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        val currentUiModeType = resolveCurrentUiModeType()
+        val entryStamp = scaledEntryRememberStamp(currentUiModeType.ordinal, configuration)
 
         val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-        val foundEntry = sortedCustomEntries.firstOrNull { entry ->
-            val qualifierEntry = entry.dpQualifierEntry
-            val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
+        val foundEntry = remember(sortedCustomEntries, entryStamp, isLandscape, isPortrait) {
+            sortedCustomEntries.firstOrNull { entry ->
+                val qualifierEntry = entry.dpQualifierEntry
+                val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
 
-            val orientationMatch = when (entry.orientation) {
-                Orientation.LANDSCAPE -> isLandscape
-                Orientation.PORTRAIT -> isPortrait
-                else -> true
-            }
+                val orientationMatch = when (entry.orientation) {
+                    Orientation.LANDSCAPE -> isLandscape
+                    Orientation.PORTRAIT -> isPortrait
+                    else -> true
+                }
 
-            if (qualifierEntry != null) {
-                val qualifierMatch = getQualifierValue(qualifierEntry.type, configuration) >= qualifierEntry.value
-                if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
-                if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
-                return@firstOrNull false
-            } else {
-                if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
-                if (entry.priority == 4 && orientationMatch) return@firstOrNull true
-                return@firstOrNull false
+                if (qualifierEntry != null) {
+                    val qualifierMatch = getQualifierValue(qualifierEntry.type, configuration) >= qualifierEntry.value
+                    if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
+                    if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
+                    return@firstOrNull false
+                } else {
+                    if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
+                    if (entry.priority == 4 && orientationMatch) return@firstOrNull true
+                    return@firstOrNull false
+                }
             }
         }
 
@@ -288,42 +266,34 @@ class ScaledSp private constructor(
     @SuppressLint("ConfigurationScreenWidthHeight")
     @Composable
     private fun resolveNoFontScale(qualifier: DpQualifier): TextUnit {
-        val context = LocalContext.current
         val configuration = LocalConfiguration.current
-
-        val activity = context.findActivityScaledSp()
-        val windowLayoutInfo = remember(activity) {
-            activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-        }?.collectAsState(initial = null)
-
-        val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-            ?.filterIsInstance<FoldingFeature>()
-            ?.firstOrNull()
-
-        val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+        val currentUiModeType = resolveCurrentUiModeType()
+        val entryStamp = scaledEntryRememberStamp(currentUiModeType.ordinal, configuration)
 
         val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-        val foundEntry = sortedCustomEntries.firstOrNull { entry ->
-            val qualifierEntry = entry.dpQualifierEntry
-            val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
+        val foundEntry = remember(sortedCustomEntries, entryStamp, isLandscape, isPortrait) {
+            sortedCustomEntries.firstOrNull { entry ->
+                val qualifierEntry = entry.dpQualifierEntry
+                val uiModeMatch = entry.uiModeType == null || entry.uiModeType == currentUiModeType
 
-            val orientationMatch = when (entry.orientation) {
-                Orientation.LANDSCAPE -> isLandscape
-                Orientation.PORTRAIT -> isPortrait
-                else -> true
-            }
+                val orientationMatch = when (entry.orientation) {
+                    Orientation.LANDSCAPE -> isLandscape
+                    Orientation.PORTRAIT -> isPortrait
+                    else -> true
+                }
 
-            if (qualifierEntry != null) {
-                val qualifierMatch = getQualifierValue(qualifierEntry.type, configuration) >= qualifierEntry.value
-                if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
-                if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
-                return@firstOrNull false
-            } else {
-                if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
-                if (entry.priority == 4 && orientationMatch) return@firstOrNull true
-                return@firstOrNull false
+                if (qualifierEntry != null) {
+                    val qualifierMatch = getQualifierValue(qualifierEntry.type, configuration) >= qualifierEntry.value
+                    if (entry.priority == 1 && uiModeMatch && qualifierMatch && orientationMatch) return@firstOrNull true
+                    if (entry.priority == 3 && qualifierMatch && orientationMatch) return@firstOrNull true
+                    return@firstOrNull false
+                } else {
+                    if (entry.priority == 2 && uiModeMatch && orientationMatch) return@firstOrNull true
+                    if (entry.priority == 4 && orientationMatch) return@firstOrNull true
+                    return@firstOrNull false
+                }
             }
         }
 

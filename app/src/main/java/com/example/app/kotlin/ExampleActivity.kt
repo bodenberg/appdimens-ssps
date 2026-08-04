@@ -10,7 +10,7 @@ import com.example.app.databinding.ActivitySspBinding
 
 /**
  * @author Bodenberg
- * GIT: https://github.com/bodenberg/appdimens-sdps.git
+ * GIT: https://github.com/bodenberg/appdimens-ssps.git
  */
 class ExampleActivity : AppCompatActivity() {
 

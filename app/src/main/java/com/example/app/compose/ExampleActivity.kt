@@ -166,9 +166,9 @@ fun AppDimensSspExampleScreen() {
             DemoCard(
                 title = "Aspect Ratio (with vs without)",
                 icon = Icons.Filled.AspectRatio,
-                description = "Variants ending in «a» (sspa, hspa, wspa, sema) apply the same geometry " +
-                    "multiplier as appdimens-dynamic — shown here at the same nominal size. " +
-                    "On ratios near ~1.78:16:9 values can look identical."
+                description = "Variants ending in «a» (sspa, hspa, wspa, sema) apply an aspect-ratio " +
+                    "adjustment on top of the XML-resolved size. Compared here at the same nominal size. " +
+                    "On ratios near 16:9 the values can look identical."
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

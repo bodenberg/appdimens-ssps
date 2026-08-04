@@ -1,13 +1,11 @@
 /**
- * Aspect-ratio adjustments for XML-pre-scaled SSP resources (same maths as appdimens-sdps /
- * appdimens-dynamic for screen geometry).
+ * Aspect-ratio adjustment factors for XML-pre-scaled SSP resources.
  *
- * B_q inferred from @_1ssp / @_1wsp / @_1hsp; recomputes on (smallestScreenWidthDp, screenWidthDp,
- * screenHeightDp, densityDpi) changes.
+ * Infers the active resource bucket from `_1ssp` / `_1wsp` / `_1hsp` and recomputes when
+ * `(smallestScreenWidthDp, screenWidthDp, screenHeightDp, densityDpi)` changes.
  */
 package com.appdimens.ssps.core
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import androidx.annotation.VisibleForTesting
@@ -23,7 +21,6 @@ object AppDimensSspsFactors {
     internal const val ADJUSTMENT_SCALE = 0.10f / 30f
     internal const val SENSITIVITY_DEFAULT = 0.08f / 30f
 
-    private const val DIMEN_TYPE = "dimen"
     private val updateLock = Any()
 
     @JvmField @Volatile var arAdjustmentSw: Float = 1f
@@ -112,7 +109,6 @@ object AppDimensSspsFactors {
         )
     }
 
-    @SuppressLint("DiscouragedApi")
     private fun computeAxisAdjustment(
         res: android.content.res.Resources,
         dimDp: Float,
@@ -122,7 +118,7 @@ object AppDimensSspsFactors {
         logNormalizedAr: Float,
     ): Float {
         if (density <= 0f) return 1f
-        val id = res.getIdentifier(dimenOneName, DIMEN_TYPE, pkg)
+        val id = DimenResourceIdCache.getOrResolve(res, pkg, dimenOneName)
         if (id == 0) return 1f
         val oneUnitPx = kotlin.runCatching { res.getDimension(id) }.getOrElse { return 1f }
         val bucketDp = oneUnitPx / density * DESIGN_BASE_DP

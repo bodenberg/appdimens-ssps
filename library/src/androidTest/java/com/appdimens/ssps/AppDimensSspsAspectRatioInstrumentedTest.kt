@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.appdimens.ssps.code.DimenSsp
 import com.appdimens.ssps.core.AppDimensSspsFactors
+import com.appdimens.ssps.core.DimenResourceIdCache
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -21,6 +22,7 @@ class AppDimensSspsAspectRatioInstrumentedTest {
     @Before
     fun resetFactorsCache() {
         AppDimensSspsFactors.resetAdjustmentCacheForTestsOnly()
+        DimenResourceIdCache.resetForTestsOnly()
     }
 
     private fun overlayContext(
@@ -93,5 +95,36 @@ class AppDimensSspsAspectRatioInstrumentedTest {
         val pxBase = DimenSsp.ssp(ctx, 32)
         val pxAr = DimenSsp.sspa(ctx, 32)
         assertTrue(kotlin.math.abs(pxBase - pxAr) > 0.5f)
+    }
+
+    @Test
+    fun sspa_appliesSameAxisAdjustmentAsExpected() {
+        val dpi = InstrumentationRegistry.getInstrumentation().targetContext.resources.configuration.densityDpi
+        val ctx = overlayContext(480, 480, 960, dpi)
+        AppDimensSspsFactors.ensureUpToDate(ctx)
+        val sspBase = DimenSsp.ssp(ctx, 16)
+        val sspAr = DimenSsp.sspa(ctx, 16)
+        val expected = sspBase * AppDimensSspsFactors.arAdjustmentSw
+        assertEquals(expected, sspAr, epsilonSpPx)
+        assertTrue(kotlin.math.abs(sspBase - sspAr) > 0.1f)
+    }
+
+    @Test
+    fun resourceIdCache_reusesIdentifierAcrossRepeatedSspLookups() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        DimenResourceIdCache.resetForTestsOnly()
+        assertEquals(0, DimenResourceIdCache.cachedSizeForTestsOnly())
+
+        val first = DimenSsp.ssp(ctx, 16)
+        val sizeAfterFirst = DimenResourceIdCache.cachedSizeForTestsOnly()
+        assertTrue(sizeAfterFirst >= 1)
+
+        val second = DimenSsp.ssp(ctx, 16)
+        assertEquals(first, second, epsilonSpPx)
+        assertEquals(sizeAfterFirst, DimenResourceIdCache.cachedSizeForTestsOnly())
+
+        // Same resource name - cache size must not grow.
+        DimenSsp.sspa(ctx, 16)
+        assertEquals(sizeAfterFirst, DimenResourceIdCache.cachedSizeForTestsOnly())
     }
 }

@@ -109,9 +109,7 @@ fun Int.wspLh(context: Context): Float = DimenSsp.wspLh(context, this)
  */
 fun Int.wspPh(context: Context): Float = DimenSsp.wspPh(context, this)
 
-// -------------------------------------------------------------------------
-// Aspect-ratio-aware (*a / *ia) — parity with appdimens-sdps / appdimens-dynamic.
-// -------------------------------------------------------------------------
+// Aspect-ratio-aware variants (*a / *ia).
 
 private fun Number.toSspIndex(): Int =
     kotlin.math.round(this.toDouble()).toInt().coerceIn(1, 600)

@@ -1,4 +1,7 @@
-/** Maps Configuration + inverter to the effective SSP / hsp / wsp resource axis. Mirrors [com.appdimens.ssps.code.DimenSsp.getResourceId]. */
+/**
+ * Maps qualifier + inverter (+ orientation) to the effective SSP / HSP / WSP resource axis.
+ * Used by [com.appdimens.ssps.code.DimenSsp.getResourceId] and Compose resolve helpers.
+ */
 package com.appdimens.ssps.common
 
 import android.content.res.Configuration
@@ -7,9 +10,21 @@ internal fun effectiveDpQualifier(
     configuration: Configuration,
     dpQualifier: DpQualifier,
     inverter: Inverter,
+): DpQualifier = effectiveDpQualifier(configuration.orientation, dpQualifier, inverter)
+
+/**
+ * Orientation-only overload for Compose remember keys that must not depend on
+ * unrelated [Configuration] fields.
+ */
+internal fun effectiveDpQualifier(
+    orientation: Int,
+    dpQualifier: DpQualifier,
+    inverter: Inverter,
 ): DpQualifier {
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    if (inverter == Inverter.DEFAULT) return dpQualifier
+
+    val isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isPortrait = orientation == Configuration.ORIENTATION_PORTRAIT
     var actual = dpQualifier
     when (inverter) {
         Inverter.PH_TO_LW ->
