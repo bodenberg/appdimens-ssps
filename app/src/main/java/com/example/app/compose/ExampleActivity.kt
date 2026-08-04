@@ -17,12 +17,14 @@ import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
@@ -174,7 +176,7 @@ fun AppDimensSspExampleScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
                             text = "Without AR",
                             style = MaterialTheme.typography.labelSmall,
@@ -201,7 +203,7 @@ fun AppDimensSspExampleScreen() {
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
                             text = "With AR (*a)",
                             style = MaterialTheme.typography.labelSmall,
@@ -359,7 +361,7 @@ fun DemoCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -386,7 +388,11 @@ fun DemoCard(
                 thickness = DividerDefaults.Thickness, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
             )
 
-            content()
+            CompositionLocalProvider(
+                LocalTextStyle provides LocalTextStyle.current.copy(lineHeight = 1.3.em)
+            ) {
+                content()
+            }
         }
     }
 }
