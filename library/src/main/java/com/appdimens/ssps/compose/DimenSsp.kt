@@ -27,18 +27,12 @@ package com.appdimens.ssps.compose
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.appdimens.ssps.common.DpQualifier
-import com.appdimens.ssps.common.effectiveDpQualifier
 import com.appdimens.ssps.common.Inverter
-import com.appdimens.ssps.core.AppDimensSspsFactors
-import com.appdimens.ssps.core.DimenResourceIdCache
-import kotlin.math.abs
 
 /**
  * EN
@@ -853,29 +847,22 @@ val Int.wemPhia: TextUnit get() = wemPha
 @get:Composable
 val Int.wemPxPhia: Float get() = wemPxPha
 
-// EN Dynamic scaling function for Sp (Resource-based, reuses DP XML resources).
-// PT Função de dimensionamento dinâmico para Sp (baseada em recursos, reutiliza os recursos XML de DP).
+// EN Dynamic scaling for Sp from SSPS XML (`_Nssp` / `_Nhsp` / `_Nwsp`).
+// PT Dimensionamento dinâmico Sp a partir dos XML SSPS.
 
 /**
  * EN
- * Converts an Int (the base Sp value) into a dynamically scaled TextUnit (Sp).
- * Same behaviour as appdimens-sdps `toDynamicScaledSp` / `sspa`, but resolves SSPS
- * XML (`_Nssp` / `_Nhsp` / `_Nwsp`) instead of SDP buckets.
- *
- * 1. Builds the resource name (e.g. `_16ssp`).
- * 2. Loads the dimen value and treats it as Sp.
- * 3. Optionally strips system font scale; optionally applies aspect-ratio (`*a`).
+ * Converts an Int (base Sp) into a dynamically scaled [TextUnit].
+ * Parallel to appdimens-sdps `toDynamicScaledSp` / `sspa` hot path: DEFAULT avoids
+ * [androidx.compose.ui.platform.LocalConfiguration]; inverters subscribe to orientation only;
+ * `*a` remembers sw/w/h/dpi; `LocalDensity` only when [fontScale] is false.
+ * Resolves SSPS typography buckets (not SDP layout dimens).
  *
  * PT
- * Converte um Int (Sp base) em TextUnit (Sp) escalado — paridade com SDPS `sspa`,
+ * Converte Int (Sp base) em [TextUnit] escalado — paridade de hot path com SDPS,
  * usando recursos SSPS (`_Nssp` / `_Nhsp` / `_Nwsp`).
- *
- * @param qualifier The screen qualifier used to determine the resource name (ssp, hsp, wsp).
- * @param fontScale Whether to respect the user's font scale setting.
- * @param inverter Inverter to swap qualifier when orientation changes.
- * @return The TextUnit (Sp) value loaded from the resource, or the base sp value as fallback.
  */
-@SuppressLint("LocalContextResourcesRead", "DiscouragedApi", "ConfigurationScreenWidthHeight")
+@SuppressLint("LocalContextResourcesRead", "DiscouragedApi")
 @Composable
 fun Int.toDynamicScaledSp(
     qualifier: DpQualifier,
@@ -887,55 +874,23 @@ fun Int.toDynamicScaledSp(
         "Value must be between 1 and 600 to use the dynamic scaling dimension logic. Current value: $this"
     }
 
-    val configuration = LocalConfiguration.current
-    val context = LocalContext.current
-    val density = LocalDensity.current
-    val actualQualifier = effectiveDpQualifier(configuration, qualifier, inverter)
+    val actualQualifier = rememberEffectiveQualifier(qualifier, inverter)
+    val dimenResourceId = rememberSspResourceId(actualQualifier, this)
 
-    // EN SSPS XML naming: _Nssp, _Nhsp, _Nwsp (SDPS SSP path uses _Nsdp because it embeds SDP).
-    // PT Nomenclatura SSPS: _Nssp, _Nhsp, _Nwsp (no SDPS o SSP embutido usa _Nsdp).
-    val suffix =
-        when (actualQualifier) {
-            DpQualifier.HEIGHT -> "hsp"
-            DpQualifier.WIDTH -> "wsp"
-            else -> "ssp"
-        }
+    var dpValue =
+        if (dimenResourceId != 0) dimensionResource(id = dimenResourceId).value
+        else this.toFloat()
 
-    val resourceName = "_${abs(this)}$suffix"
-    val layoutStamp = layoutRememberStamp(configuration)
-    val stamp = spRememberStamp(layoutStamp, density)
-    val base = this
-
-    // EN Resolve resource id + Sp outside dimensionResource so remember can cache the result.
-    // PT Resolve o id + Sp fora de dimensionResource para o remember poder cachear.
-    val dimenResourceId = remember(resourceName, context.packageName) {
-        DimenResourceIdCache.getOrResolve(
-            context.resources,
-            context.packageName,
-            resourceName,
-        )
+    if (applyAspectRatio) {
+        dpValue *= rememberAspectRatioAdjustment(actualQualifier)
     }
 
-    return remember(
-        base,
-        actualQualifier,
-        fontScale,
-        applyAspectRatio,
-        stamp,
-        dimenResourceId,
-    ) {
-        if (dimenResourceId != 0) {
-            val densityValue = density.density
-            var dpValue = context.resources.getDimension(dimenResourceId) / densityValue
-            if (applyAspectRatio) {
-                AppDimensSspsFactors.ensureUpToDate(context)
-                dpValue *= AppDimensSspsFactors.adjustmentForQualifier(actualQualifier)
-            }
-            if (fontScale) dpValue.sp
-            else (dpValue / density.fontScale).sp
-        } else {
-            if (fontScale) base.sp
-            else (base.toFloat() / density.fontScale).sp
-        }
+    return if (fontScale) {
+        dpValue.sp
+    } else {
+        // EN Bypass font scale: only this branch subscribes to LocalDensity.
+        // PT Ignora escala de fonte: só este ramo assina LocalDensity.
+        (dpValue / LocalDensity.current.fontScale).sp
     }
 }
+
