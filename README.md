@@ -10,7 +10,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bodenberg:appdimens-ssps:3.1.5")
+    implementation("io.github.bodenberg:appdimens-ssps:3.1.6")
 }
 ```
 
@@ -78,10 +78,14 @@ val widthToHeight = 50.wspLh
 **Facilitators — Quick Conditional Overrides:**
 ```kotlin
 import com.appdimens.ssps.common.Orientation
+import com.appdimens.ssps.compose.AppDimensProvider
 import com.appdimens.ssps.compose.sspRotate
 import com.appdimens.ssps.compose.sspMode
 import com.appdimens.ssps.compose.sspQualifier
 import com.appdimens.ssps.compose.sspScreen
+
+// Optional root wrapper — caches UiMode (incl. foldables) for *Mode / *Screen facilitators
+setContent { AppDimensProvider { /* app UI */ } }
 
 // Rotate Facilitators:
 // 1. Int variant (Scales result by default)

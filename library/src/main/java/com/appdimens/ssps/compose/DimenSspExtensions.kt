@@ -25,18 +25,11 @@
 package com.appdimens.ssps.compose
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.TextUnit
-import androidx.window.layout.FoldingFeature
-import androidx.window.layout.WindowInfoTracker
 import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
@@ -638,14 +631,6 @@ fun TextUnit.wspRotatePlainPx(
     return LocalDensity.current.run { wspRotatePlain(rotation, orientation).toPx() }
 }
 
-// EN Helps extract the activity from context wrapper (Sp version)
-// PT Ajuda a extrair a activity de um context wrapper (versão Sp)
-private tailrec fun android.content.Context.findActivitySp(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivitySp()
-    else -> null
-}
-
 // EN UiModeType facilitator extensions for Sp.
 // PT Extensões facilitadoras para UiModeType (Sp).
 
@@ -670,14 +655,7 @@ fun Int.sspMode(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
     } else {
@@ -720,14 +698,7 @@ fun TextUnit.sspMode(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
     } else {
@@ -770,14 +741,7 @@ fun TextUnit.sspModePlain(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.SMALL_WIDTH, fontScale)
     } else {
@@ -823,14 +787,7 @@ fun Int.hspMode(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
     } else {
@@ -873,14 +830,7 @@ fun TextUnit.hspMode(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
     } else {
@@ -923,14 +873,7 @@ fun TextUnit.hspModePlain(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.HEIGHT, fontScale)
     } else {
@@ -976,14 +919,7 @@ fun Int.wspMode(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
     } else {
@@ -1026,14 +962,7 @@ fun TextUnit.wspMode(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
     } else {
@@ -1076,14 +1005,7 @@ fun TextUnit.wspModePlain(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     return if (currentUiModeType == uiModeType) {
         modeValue.toDynamicScaledSp(finalQualifierResolver ?: DpQualifier.WIDTH, fontScale)
     } else {
@@ -1556,15 +1478,8 @@ fun Int.sspScreen(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1615,15 +1530,8 @@ fun TextUnit.sspScreen(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1674,15 +1582,8 @@ fun TextUnit.sspScreenPlain(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1732,15 +1633,8 @@ fun Int.hspScreen(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1791,15 +1685,8 @@ fun TextUnit.hspScreen(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1850,15 +1737,8 @@ fun TextUnit.hspScreenPlain(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1908,15 +1788,8 @@ fun Int.wspScreen(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -1967,15 +1840,8 @@ fun TextUnit.wspScreen(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
@@ -2026,15 +1892,8 @@ fun TextUnit.wspScreenPlain(
     finalQualifierResolver: DpQualifier? = null,
     fontScale: Boolean = true
 ): TextUnit {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val activity = context.findActivitySp()
-    val windowLayoutInfo = remember(activity) {
-        activity?.let { WindowInfoTracker.getOrCreate(it).windowLayoutInfo(it) }
-    }?.collectAsState(initial = null)
-    val foldingFeature = windowLayoutInfo?.value?.displayFeatures
-        ?.filterIsInstance<FoldingFeature>()?.firstOrNull()
-    val currentUiModeType = UiModeType.fromConfiguration(context, foldingFeature)
+    val currentUiModeType = resolveCurrentUiModeType()
     val uiModeMatch = currentUiModeType == uiModeType
     val qualifierMatch = getQualifierValue(qualifierType, configuration) >= qualifierValue
     return if (uiModeMatch && qualifierMatch) {
