@@ -37,6 +37,7 @@ import com.appdimens.ssps.common.DpQualifier
 import com.appdimens.ssps.common.effectiveDpQualifier
 import com.appdimens.ssps.common.Inverter
 import com.appdimens.ssps.core.AppDimensSspsFactors
+import com.appdimens.ssps.core.DimenResourceIdCache
 import kotlin.math.abs
 
 /**
@@ -905,7 +906,11 @@ fun Int.toDynamicScaledSp(
     // EN Resolve resource id + Sp outside dimensionResource so remember can cache the result.
     // PT Resolve o id + Sp fora de dimensionResource para o remember poder cachear.
     val dimenResourceId = remember(resourceName, context.packageName) {
-        context.resources.getIdentifier(resourceName, "dimen", context.packageName)
+        DimenResourceIdCache.getOrResolve(
+            context.resources,
+            context.packageName,
+            resourceName,
+        )
     }
 
     return remember(

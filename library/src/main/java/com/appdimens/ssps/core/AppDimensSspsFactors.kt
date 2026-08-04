@@ -7,7 +7,6 @@
  */
 package com.appdimens.ssps.core
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import androidx.annotation.VisibleForTesting
@@ -23,7 +22,6 @@ object AppDimensSspsFactors {
     internal const val ADJUSTMENT_SCALE = 0.10f / 30f
     internal const val SENSITIVITY_DEFAULT = 0.08f / 30f
 
-    private const val DIMEN_TYPE = "dimen"
     private val updateLock = Any()
 
     @JvmField @Volatile var arAdjustmentSw: Float = 1f
@@ -112,7 +110,6 @@ object AppDimensSspsFactors {
         )
     }
 
-    @SuppressLint("DiscouragedApi")
     private fun computeAxisAdjustment(
         res: android.content.res.Resources,
         dimDp: Float,
@@ -122,7 +119,7 @@ object AppDimensSspsFactors {
         logNormalizedAr: Float,
     ): Float {
         if (density <= 0f) return 1f
-        val id = res.getIdentifier(dimenOneName, DIMEN_TYPE, pkg)
+        val id = DimenResourceIdCache.getOrResolve(res, pkg, dimenOneName)
         if (id == 0) return 1f
         val oneUnitPx = kotlin.runCatching { res.getDimension(id) }.getOrElse { return 1f }
         val bucketDp = oneUnitPx / density * DESIGN_BASE_DP

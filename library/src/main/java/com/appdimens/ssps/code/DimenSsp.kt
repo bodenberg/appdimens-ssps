@@ -34,6 +34,7 @@ import com.appdimens.ssps.common.Inverter
 import com.appdimens.ssps.common.Orientation
 import com.appdimens.ssps.common.UiModeType
 import com.appdimens.ssps.core.AppDimensSspsFactors
+import com.appdimens.ssps.core.DimenResourceIdCache
 import kotlin.math.abs
 
 /**
@@ -50,23 +51,25 @@ import kotlin.math.abs
 object DimenSsp {
     private const val MIN_VALUE = 1
     private const val MAX_VALUE = 600
-    private const val DIMEN_TYPE = "dimen"
 
     /**
      * EN
      * Gets the dimension in pixels (Sp) from an SSP value.
-     * Reads the DP XML resource and converts it to Sp pixels.
+     * Reads the DP XML resource and converts it to Sp pixels, respecting or ignoring the system font scale.
+     * Optionally applies the same aspect-ratio multiplier as Compose `sspa`.
      *
      * PT
      * Obtém a dimensão em pixels (Sp) a partir de um valor SSP.
-     * Lê o recurso XML de DP e converte para pixels Sp.
+     * Lê o recurso XML de DP e converte para pixels Sp, respeitando ou ignorando a escala de fonte.
+     * Opcionalmente aplica o mesmo multiplicador de aspect ratio do Compose `sspa`.
      *
      * @param context The application context.
      * @param dpQualifier DpQualifier (SMALL_WIDTH, HEIGHT, WIDTH).
      * @param value The SSP value (1 to 600).
      * @param inverter The inverter type (default is Inverter.DEFAULT).
      * @param fontScale Whether to include the system font scale. Default true.
-     * @return The dimension in pixels (Sp), or 0f if not found.
+     * @param applyAspectRatio When true, multiply resolved Sp pixels by the per-axis AR adjustment.
+     * @return The dimension in Sp pixels. If the XML resource is missing, falls back to an unscaled Sp value.
      */
     @JvmStatic
     @JvmOverloads
@@ -82,23 +85,28 @@ object DimenSsp {
         require(value in MIN_VALUE..MAX_VALUE) {
             "Value must be between $MIN_VALUE and $MAX_VALUE. Current value: $value"
         }
-        val resourceId = getResourceId(context, dpQualifier, value, inverter)
-        if (resourceId == 0) return 0f
+        val configuration = context.resources.configuration
+        val actualQualifier = effectiveDpQualifier(configuration, dpQualifier, inverter)
+        // EN Resolve once with the already-computed qualifier (avoid double inverter + getIdentifier).
+        // PT Resolve uma vez com o qualificador já calculado (evita inverter + getIdentifier duplicados).
+        val resourceId = resolveResourceId(context, actualQualifier, value)
+        val metrics = context.resources.displayMetrics
 
-        // EN Same intermediate as Compose: scaled dimen px / density, then optionally AR, then SP px.
-        // PT Mesmo intermédio que o Compose: px do dimen / density, opcionalmente AR, depois px SP.
-        val density = context.resources.displayMetrics.density
-        var dpValue = context.resources.getDimension(resourceId) / density
+        // EN Missing resource → unscaled Sp (parity with Compose `toDynamicScaledSp` fallback).
+        // PT Recurso ausente → Sp sem escala XML (paridade com o fallback Compose).
+        var dpValue = if (resourceId != 0) {
+            context.resources.getDimension(resourceId) / metrics.density
+        } else {
+            value.toFloat()
+        }
         if (applyAspectRatio) {
             AppDimensSspsFactors.ensureUpToDate(context)
-            val eq = effectiveDpQualifier(context.resources.configuration, dpQualifier, inverter)
-            dpValue *= AppDimensSspsFactors.adjustmentForQualifier(eq)
+            dpValue *= AppDimensSspsFactors.adjustmentForQualifier(actualQualifier)
         }
-        val metrics = context.resources.displayMetrics
         return if (fontScale) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, dpValue, metrics)
         } else {
-            // EN Bypasses font scale by using complexUnitDip since 1dp = (density/fontScale) sp display pixels.
+            // EN Bypasses font scale using density directly.
             // PT Ignora a escala de fonte usando a densidade diretamente.
             dpValue * metrics.density
         }
@@ -121,7 +129,6 @@ object DimenSsp {
      */
     @JvmStatic
     @JvmOverloads
-    @SuppressLint("DiscouragedApi")
     fun getResourceId(
         context: Context,
         dpQualifier: DpQualifier,
@@ -129,20 +136,25 @@ object DimenSsp {
         inverter: Inverter = Inverter.DEFAULT
     ): Int {
         if (value == 0) return 0
-
         val actualQualifier =
             effectiveDpQualifier(context.resources.configuration, dpQualifier, inverter)
+        return resolveResourceId(context, actualQualifier, value)
+    }
 
+    /** EN Builds `_Nssp` / `_Nhsp` / `_Nwsp` and resolves via [DimenResourceIdCache]. PT Monta o nome e resolve via cache. */
+    private fun resolveResourceId(context: Context, actualQualifier: DpQualifier, value: Int): Int {
         val safeValue = value.coerceIn(MIN_VALUE, MAX_VALUE)
-        // EN Reuses DP resource naming convention: _Nssp, _Nhsp, _Nwsp.
-        // PT Reutiliza convenção de nomenclatura DP: _Nssp, _Nhsp, _Nwsp.
         val suffix = when (actualQualifier) {
             DpQualifier.SMALL_WIDTH -> "ssp"
             DpQualifier.HEIGHT -> "hsp"
             DpQualifier.WIDTH -> "wsp"
         }
         val dimenName = "_${abs(safeValue)}$suffix"
-        return context.resources.getIdentifier(dimenName, DIMEN_TYPE, context.packageName)
+        return DimenResourceIdCache.getOrResolve(
+            context.resources,
+            context.packageName,
+            dimenName,
+        )
     }
 
     // EN Quick-resolution methods.
