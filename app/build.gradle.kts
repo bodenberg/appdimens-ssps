@@ -16,16 +16,65 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // The CI "minified APK" job runs instrumented tests against the R8
+        // release artifact; AGP only registers androidTest tasks for the
+        // testBuildType variant, so it must be release for
+        // assembleReleaseAndroidTest / connectedReleaseAndroidTest to exist.
+        testBuildType = "release"
+    }
+
+    val keystoreFile = rootProject.file("test_keystore.jks")
+
+    // test_keystore.jks is git-ignored (*.jks), so CI cannot rely on it being
+    // checked out. Regenerate it with the same alias/passwords the build
+    // expects ("test"/123456) whenever it is missing, before any build task.
+    val createTestKeystore by tasks.registering(Exec::class) {
+        onlyIf { !keystoreFile.exists() }
+        val keytoolBin = File(System.getProperty("java.home"), "bin/keytool")
+        commandLine(
+            if (keytoolBin.exists()) keytoolBin.absolutePath else "keytool",
+            "-genkeypair", "-v",
+            "-keystore", keystoreFile.absolutePath,
+            "-storetype", "PKCS12",
+            "-alias", "test",
+            "-keyalg", "RSA", "-keysize", "2048", "-validity", "10000",
+            "-storepass", "123456", "-keypass", "123456",
+            "-dname", "CN=AppDimens Android CI, OU=CI, O=AppDimens, L=Unspecified, ST=Unspecified, C=BR"
+        )
+        outputs.file(keystoreFile)
+    }
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn(createTestKeystore)
+    }
+
+    signingConfigs {
+        create("sample") {
+            storeFile = keystoreFile
+            storePassword = System.getenv("SAMPLE_STORE_PASSWORD") ?: "123456"
+            keyAlias = "test"
+            keyPassword = System.getenv("SAMPLE_KEY_PASSWORD") ?: "123456"
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
             isShrinkResources = true
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("sample")
+        }
+        debug {
+            isShrinkResources = false
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("sample")
         }
     }
     compileOptions {
