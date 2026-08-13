@@ -1,21 +1,32 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
+# ============================================================================
+# AppDimens SSPS — Library module · self-build R8 rules
+# Applied only if this AAR is compiled with minifyEnabled = true
+# (release build of the library itself).
 #
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Keeps the complete public API contract so consumers keep working;
+# private/internal code stays fully shrinkable/optimizable.
+# ============================================================================
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# --- Public API surface ------------------------------------------------------
+# Keep every public/protected member of all public types. Internal/private
+# members are still removed and optimized by R8 full mode.
+-keep class com.appdimens.ssps.** { public protected *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- Enums (Java interop: Enum.values / Enum.valueOf / constants) ------------
+-keepclassmembers enum com.appdimens.ssps.** {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# --- Compose ------------------------------------------------------------------
+# Preserve runtime-visible annotations (Kotlin @Metadata, @Composable, etc.)
+# and all @Composable members so Compose-compiled consumers keep working.
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @androidx.compose.runtime.Composable *;
+}
+
+# --- Dynamic resource lookup ---------------------------------------------------
+# getIdentifier() lookups ("_1ssp", "_1wsp", "_1hsp", ...) are resource-level;
+# names are preserved via res/raw/keep.xml (tools:keep) when the consuming
+# app enables shrinkResources.

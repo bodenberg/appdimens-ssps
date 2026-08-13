@@ -38,6 +38,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".compose.BenchmarkActivity"
+            android:exported="false"
+            android:theme="@style/Theme" />
+
     </application>
 
 </manifest>
