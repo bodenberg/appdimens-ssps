@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.bodenberg</groupId>
   <artifactId>appdimens-ssps</artifactId>
-  <version>3.1.6</version>
+  <version>3.1.7</version>
   <packaging>aar</packaging>
   <name>AppDimens SSP, HSP, WSP: Scalable Width and Height Dimensions (Responsive Layouts)</name>
   <description>AppDimens SSP, HSP, WSP is a modern dimension management system exclusively for typography and fonts (SP) on Android. (dimens, dimension, dimensions, dp, sp, dimen, text unit, font scale, font size, responsive, adaptative, resize, textunit, mm, cm, inch, device, physical, android, dpi, sdpi, hdpi, mdpi, ldpi, precision, absolute, layout, typeface)</description>

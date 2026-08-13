@@ -10,7 +10,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bodenberg:appdimens-ssps:3.1.6")
+    implementation("io.github.bodenberg:appdimens-ssps:3.1.7")
 }
 ```
 
