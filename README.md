@@ -18,6 +18,18 @@ dependencies {
 
 ---
 
+## 🔀 Which AppDimens Library Should I Use?
+
+AppDimens is a family of libraries — pick the one that matches your project type:
+
+| Your project | Recommended library |
+|--------------|---------------------|
+| **Jetpack Compose** | [**appdimens-dynamic**](https://github.com/bodenberg/appdimens-dynamic) — dynamic, aspect-ratio and orientation-aware Compose-first scaling |
+| **Kotlin Multiplatform (KMP)** | [**appdimens-kmp**](https://github.com/bodenberg/appdimens-kmp) — multiplatform SSP/HSP/WSP scaling |
+| **XML, Kotlin/Java code, or hybrid (this library)** | **AppDimens SSPS** — pre-calculated `@dimen` resources + Compose extensions + code-level APIs |
+
+---
+
 ## 💻 Usage Examples
 
 ### 1. Jetpack Compose

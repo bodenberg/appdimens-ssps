@@ -1,0 +1,34 @@
+# LLMS.txt
+
+> AppDimens SSPS is the most complete responsive typography and dimension library for Android. It provides thousands of pre-calculated `@dimen` resources ready to use — plus dynamic Compose extensions, code-level APIs, conditional builders, orientation-aware inverters, and accessibility-aware variants — all in a single, zero-configuration dependency.
+
+Current version: **3.1.7** — Maven coordinate: `io.github.bodenberg:appdimens-ssps:3.1.7` — Min SDK 24 · Compile SDK 36 · Apache License 2.0.
+
+If your project is **Jetpack Compose**, the recommended library is [appdimens-dynamic](https://github.com/bodenberg/appdimens-dynamic). If your project is **Kotlin Multiplatform (KMP)**, the recommended library is [appdimens-kmp](https://github.com/bodenberg/appdimens-kmp). AppDimens SSPS targets XML layouts, Kotlin/Java code, and hybrid projects.
+
+## Important: Core Docs
+
+- [README.md](https://raw.githubusercontent.com/bodenberg/appdimens-ssps/master/README.md): Full documentation — installation, Compose extensions, XML resources, Kotlin/Java APIs, aspect-ratio variants, facilitators, and builders.
+- [CONTRIBUTING.md](https://raw.githubusercontent.com/bodenberg/appdimens-ssps/master/CONTRIBUTING.md): Contribution guidelines.
+- [CODE_OF_CONDUCT.md](https://raw.githubusercontent.com/bodenberg/appdimens-ssps/master/CODE_OF_CONDUCT.md): Code of conduct.
+- [SECURITY.md](https://raw.githubusercontent.com/bodenberg/appdimens-ssps/master/SECURITY.md): Security policy.
+- [LICENSE](https://raw.githubusercontent.com/bodenberg/appdimens-ssps/master/LICENSE): Apache License 2.0.
+
+## Important: Project Structure
+
+- `library/` — The AppDimens SSPS library module (`com.appdimens.ssps`), organized as:
+  - `library/src/main/java/com/appdimens/ssps/compose/` — Compose extensions (`.ssp`, `.hsp`, `.wsp`, `.sem`, aspect-ratio `*a` variants, inverters, facilitators, `AppDimensProvider`, `DimenSspScaled`, `scaledSp()`).
+  - `library/src/main/java/com/appdimens/ssps/code/` — Kotlin/Java code-level API (`DimenSsp` object, `DimenSspExtensions`, `DimenSspScaled`).
+  - `library/src/main/java/com/appdimens/ssps/common/` — Enums and models (`Orientation`, `UiModeType`, `DpQualifier`, `DpQualifierEntry`, `EffectiveDpQualifier`, `Inverter`).
+  - `library/src/main/java/com/appdimens/ssps/core/` — `AppDimensSspsFactors` (aspect-ratio factor computation, `warmupSspsFactors`) and `DimenResourceIdCache`.
+  - `library/src/main/res/` — 350+ pre-calculated qualifier directories (`values-sw360dp`, `values-h600dp`, `values-w600dp`, …) and `raw/com_appdimens_ssps_keep.xml`.
+- `app/` — Sample app (`com.example.app`) with Compose (`ExampleActivity.kt`), Kotlin, and Java (`ExampleActivity.java`) examples, plus benchmarks (`BenchmarkActivity.kt`, micro/macro/calculation benchmark runners).
+- `build.gradle.kts` / `settings.gradle.kts` / `gradle/` — Gradle build configuration (AGP, Kotlin, `com.vanniktech.maven.publish`).
+- `IMAGES/` — README screenshots and banner.
+- `script/` — Helper scripts.
+
+## Optional: Additional Docs
+
+- [appdimens-dynamic](https://github.com/bodenberg/appdimens-dynamic) — Recommended Compose-first alternative (dynamic, aspect-ratio and orientation-aware scaling).
+- [appdimens-kmp](https://github.com/bodenberg/appdimens-kmp) — Recommended Kotlin Multiplatform alternative.
+- [llmstxt.org](https://llmstxt.org/) — The LLMS.txt standard this file follows.
