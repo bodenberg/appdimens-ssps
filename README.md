@@ -1,4 +1,5 @@
 # AppDimens SSP, HSP, WSP
+<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=c894c661-fc66-4d10-87e3-6bc795e4ca4f" />
 
 ![AppDimens Banner](IMAGES/banner_top.png)
 
