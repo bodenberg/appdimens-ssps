@@ -11,7 +11,7 @@
 
 ```kotlin
 dependencies {
-    implementation("io.github.bodenberg:appdimens-ssps:3.1.7")
+    implementation("io.github.bodenberg:appdimens-ssps:3.2.0")
 }
 ```
 
@@ -254,10 +254,11 @@ float result = scaled.ssp(context);
 
 ---
 
-## ✨ What's New in Version 3.x
+## ✨ What's New in Version 3.2.0
 
 | Feature | Description |
 |---------|-------------|
+| **Compose version compatibility** | Compose is now `compileOnly` — the library no longer pins a Compose version, so it works with any Compose BOM the app chooses and removes `class/function not found` errors |
 | **Triple Axis Scaling** | Full support for SSP (Smallest Width), HSP (Height), and WSP (Width) |
 | **Aspect ratio (`*a` variants)** | `sspa`, `hspa`, `wspa`, `sema`, `hema`, `wema` (+ inverters): aspect-ratio adjustment on top of XML-resolved sizes; optional **`DimenSsp.warmupSspsFactors`**. |
 | **Accessibility Control** | SEM, HEM, WEM variants to ignore system font scale when necessary |

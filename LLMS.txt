@@ -2,7 +2,7 @@
 
 > AppDimens SSPS is the most complete responsive typography and dimension library for Android. It provides thousands of pre-calculated `@dimen` resources ready to use — plus dynamic Compose extensions, code-level APIs, conditional builders, orientation-aware inverters, and accessibility-aware variants — all in a single, zero-configuration dependency.
 
-Current version: **3.1.7** — Maven coordinate: `io.github.bodenberg:appdimens-ssps:3.1.7` — Min SDK 24 · Compile SDK 36 · Apache License 2.0.
+Current version: **3.2.0** — Maven coordinate: `io.github.bodenberg:appdimens-ssps:3.2.0` — Min SDK 24 · Compile SDK 36 · Apache License 2.0.
 
 If your project is **Jetpack Compose**, the recommended library is [appdimens-dynamic](https://github.com/bodenberg/appdimens-dynamic). If your project is **Kotlin Multiplatform (KMP)**, the recommended library is [appdimens-kmp](https://github.com/bodenberg/appdimens-kmp). AppDimens SSPS targets XML layouts, Kotlin/Java code, and hybrid projects.
 

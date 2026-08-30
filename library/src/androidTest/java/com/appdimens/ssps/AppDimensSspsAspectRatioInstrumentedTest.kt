@@ -123,8 +123,16 @@ class AppDimensSspsAspectRatioInstrumentedTest {
         assertEquals(first, second, epsilonSpPx)
         assertEquals(sizeAfterFirst, DimenResourceIdCache.cachedSizeForTestsOnly())
 
-        // Same resource name - cache size must not grow.
-        DimenSsp.sspa(ctx, 16)
-        assertEquals(sizeAfterFirst, DimenResourceIdCache.cachedSizeForTestsOnly())
+        // sspa applies aspect-ratio adjustment, which triggers
+        // AppDimensSspsFactors.ensureUpToDate and legitimately resolves extra
+        // factor resources into the cache. A repeated sspa lookup must still
+        // reuse the cache (no further growth beyond the first sspa).
+        val third = DimenSsp.sspa(ctx, 16)
+        val sizeAfterSspa = DimenResourceIdCache.cachedSizeForTestsOnly()
+        assertTrue(sizeAfterSspa >= sizeAfterFirst)
+
+        val fourth = DimenSsp.sspa(ctx, 16)
+        assertEquals(third, fourth, epsilonSpPx)
+        assertEquals(sizeAfterSspa, DimenResourceIdCache.cachedSizeForTestsOnly())
     }
 }

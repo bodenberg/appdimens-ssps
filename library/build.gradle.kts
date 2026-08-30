@@ -14,7 +14,7 @@ val isJitPack = System.getenv("JITPACK") == "true"
         || System.getenv("ci") == "true"
 
 mavenPublishing {
-    coordinates("io.github.bodenberg", "appdimens-ssps", "3.1.7")
+    coordinates("io.github.bodenberg", "appdimens-ssps", providers.gradleProperty("appdimens.version").orElse("3.2.0").get())
 
     configure(
         AndroidSingleVariantLibrary(
@@ -163,10 +163,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlin.get()
-    }
 }
 
 kotlin {
@@ -176,13 +172,25 @@ kotlin {
 }
 
 dependencies {
+    compileOnly(platform(libs.androidx.compose.bom))
+    compileOnly(libs.androidx.compose.ui)
+    compileOnly(libs.androidx.compose.runtime)
+
     implementation(libs.androidx.core.ktx)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.window)
-    //dokkaPlugin(libs.android.documentation.plugin)
+    implementation(libs.androidx.annotation)
+
     testImplementation(libs.junit)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui)
+    testImplementation(libs.androidx.compose.runtime)
+    testImplementation(libs.androidx.compose.ui.graphics)
+    testImplementation(libs.androidx.compose.ui.tooling.preview)
+    testImplementation(libs.androidx.compose.material3)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui)
+    androidTestImplementation(libs.androidx.compose.runtime)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }

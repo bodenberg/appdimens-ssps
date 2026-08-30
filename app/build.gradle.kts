@@ -92,16 +92,16 @@ android {
 dependencies {
     api(project(":library"))
 
-    //implementation("io.github.bodenberg:appdimens-ssps:3.1.7")
+    //implementation("io.github.bodenberg:appdimens-ssps:3.2.0")
     // or
-    //implementation("com.github.bodenberg.appdimens:appdimens-ssps:3.1.7")
+    //implementation("com.github.bodenberg.appdimens:appdimens-ssps:3.2.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.androidx.compose.bom.app))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui.graphics)
@@ -113,7 +113,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom.app))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
