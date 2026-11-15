@@ -32,3 +32,5 @@ If your project is **Jetpack Compose**, the recommended library is [appdimens-dy
 - [appdimens-dynamic](https://github.com/bodenberg/appdimens-dynamic) — Recommended Compose-first alternative (dynamic, aspect-ratio and orientation-aware scaling).
 - [appdimens-kmp](https://github.com/bodenberg/appdimens-kmp) — Recommended Kotlin Multiplatform alternative.
 - [llmstxt.org](https://llmstxt.org/) — The LLMS.txt standard this file follows.
+
+Family (same tokens and math): appdimens-dynamic (Android), appdimens-sdps/ssps (XML), appdimens-kmp, appdimens-ios, appdimens-flutter, appdimens-react-native, appdimens-web, appdimens-net-binding (.NET), appdimens-qt, appdimens-gtk, appdimens-lvgl, appdimens-roku, appdimens-py, appdimens-games — https://github.com/bodenberg/appdimens · agent skills: https://github.com/bodenberg/appdimens-skills

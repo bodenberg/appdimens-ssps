@@ -386,3 +386,28 @@ Range: **1 to 600** for all qualifiers.
 ---
 
 *Created with the best traditions of responsive and accessible typography for the Android ecosystem.*
+
+<!-- appdimens-family:begin (maintained in bodenberg/appdimens tools/family_block.py) -->
+## 🌍 AppDimens family
+
+Same token names and the same math on every platform — [hub](https://github.com/bodenberg/appdimens) · [AI agent skills](https://github.com/bodenberg/appdimens-skills) · [custom strategies](https://github.com/bodenberg/appdimens/blob/main/DOCS/CUSTOM.md) (one JSON for every platform).
+
+| Platform | Library | Scaled `16` |
+|---|---|---|
+| Android — Jetpack Compose, Views, Java | [appdimens-dynamic](https://github.com/bodenberg/appdimens-dynamic) | `16.sdp` · `16.sdp(context)` |
+| Android — XML resources | [appdimens-sdps](https://github.com/bodenberg/appdimens-sdps) | `@dimen/_16sdp` |
+| Android — XML text sizes | **appdimens-ssps** (this repository) | `@dimen/_16ssp` |
+| Kotlin / Compose Multiplatform | [appdimens-kmp](https://github.com/bodenberg/appdimens-kmp) | `16.sdp` |
+| iOS · macOS — SwiftUI, UIKit, AppKit, Metal | [appdimens-ios](https://github.com/bodenberg/appdimens-ios) | `16.sdp` |
+| Flutter | [appdimens-flutter](https://github.com/bodenberg/appdimens-flutter) | `16.sdp` |
+| React Native / Expo | [appdimens-react-native](https://github.com/bodenberg/appdimens-react-native) | `sdp(16)` |
+| Web — HTML/CSS, React, Vue, Svelte, Angular | [appdimens-web](https://github.com/bodenberg/appdimens-web) | `sdp(16)` · `16sdp` |
+| .NET — MAUI, WPF, WinForms, WinUI, Android | [appdimens-net-binding](https://github.com/bodenberg/appdimens-net-binding) | `16.Sdp()` · `{sdp:16}` |
+| Qt 5/6 — QML, Widgets | [appdimens-qt](https://github.com/bodenberg/appdimens-qt) | `AppDimens.sdp(16)` · `16_sdp` |
+| GTK 3/4 and portable C99 | [appdimens-gtk](https://github.com/bodenberg/appdimens-gtk) | `16sdp` (CSS) · `ad_sdp(&m, 16)` |
+| LVGL 8/9 — MCUs, embedded Linux | [appdimens-lvgl](https://github.com/bodenberg/appdimens-lvgl) | `lv_ad_sdp(16)` |
+| Roku — BrightScript / SceneGraph | [appdimens-roku](https://github.com/bodenberg/appdimens-roku) | `ad.sdp(16)` |
+| Python — Tkinter, Qt, Kivy, pygame, Blender | [appdimens-py](https://github.com/bodenberg/appdimens-py) | `ad.sdp(16)` |
+| Games — Unity, Unreal, Godot, C/C++, .NET, Android | [appdimens-games](https://github.com/bodenberg/appdimens-games) | `64f.ASdp()` · `AppDimens.asdp(64)` · `appdimens::asdp(64)` |
+
+<!-- appdimens-family:end -->
